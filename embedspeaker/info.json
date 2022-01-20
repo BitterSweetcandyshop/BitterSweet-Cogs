@@ -1,0 +1,6 @@
+{
+    "author": ["BitterSweet#1337"],
+    "description": "Make messages sent in channels automatically embeds.",
+    "install_msg": "`[p]embedspeaker add/remove <channel>`\nIf you need help or anything join my server: https://discord.com/invite/ChS8MZDPRA",
+    "short": "On send, make messages an embed"
+}

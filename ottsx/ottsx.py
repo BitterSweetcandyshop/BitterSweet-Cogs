@@ -8,7 +8,7 @@ from py1337x import py1337x
 
 class ottsx(commands.Cog):
     """
-    My custom cog
+    Search 1337x.
     """
 
     def __init__(self, bot):
