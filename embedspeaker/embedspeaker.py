@@ -24,14 +24,13 @@ class EmbedSpeaker(commands.Cog):
 
     @embedspeaker.command()
     @checks.admin_or_permissions(manage_guild=True)
-    async def add(self, ctx: commands.Context, channel_specified: Optional[discord.TextChannel] = None):
+    async def add(self, ctx):
+        """Add a channel to embedspeaker."""
 
-        if not channel_specified:
-            channel_specified = ctx.channel
-            current_channels = await self.conf.guild(ctx.guild).allowed_channels()
+        current_channels = await self.conf.guild(ctx.guild).allowed_channels()
         channel_specified = {
-            "id": channel_specified.id,
-            "name": channel_specified.name
+            "id": ctx.channel.id,
+            "name": ctx.channel.name
         }
 
         if len(current_channels) > 0:
@@ -47,14 +46,13 @@ class EmbedSpeaker(commands.Cog):
 
     @embedspeaker.command()
     @checks.admin_or_permissions(manage_guild=True)
-    async def remove(self, ctx, channel_specified: Optional[discord.TextChannel] = None):
+    async def remove(self, ctx):
+        """Remove a channel from embedspeaker."""
 
-        if not channel_specified:
-            channel_specified = ctx.channel
-            current_channels = await self.conf.guild(ctx.guild).allowed_channels()
+        current_channels = await self.conf.guild(ctx.guild).allowed_channels()
         channel_specified = {
-            "id": channel_specified.id,
-            "name": channel_specified.name
+            "id": ctx.channel.id,
+            "name": ctx.channel.name
         }
 
         if len(current_channels) == 0:
@@ -78,3 +76,32 @@ class EmbedSpeaker(commands.Cog):
     async def reset(self, ctx):
         await self.conf.guild(ctx.guild).allowed_channels.set([])
         await ctx.send("DONE!!!")
+
+
+    @commands.Cog.listener()
+    async def on_message(self, message):
+        make_embed = False
+        current_channel = message.channel
+        stored_channels = await self.conf.guild(message.guild).allowed_channels()
+        if len(stored_channels) == 0:
+            return
+        
+        if message.author.bot:
+            return
+
+        for stored_channel in stored_channels:
+            if stored_channel["id"] == current_channel.id:
+                make_embed = True
+        
+        if make_embed:
+            user = await self.bot.fetch_user(message.author.id)
+            print(user.avatar_url)
+            embed = discord.Embed(
+                description=message.content
+            )
+            embed.set_author(
+                name=message.author,
+                icon_url=user.avatar_url
+            )
+            await self.bot.send_filtered(message.channel, embed=embed)
+            return
