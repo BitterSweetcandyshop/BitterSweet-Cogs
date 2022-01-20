@@ -1,5 +1,5 @@
 {
-    "author": "BitterSweet#1337",
+    "author": ["BitterSweet#1337"],
     "description": "Seach 1337x and automatically get detials if a link is posted in chat",
     "install_msg": "Usage is [p]ottsx to search If you need help or anything join my server: https://discord.com/invite/ChS8MZDPRA",
     "short": "Search 1337x",

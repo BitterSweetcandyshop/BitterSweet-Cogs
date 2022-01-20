@@ -28,7 +28,7 @@ class ottsx(commands.Cog):
         pages = []
         try:
             async with ctx.typing():
-                clientX = py1337x(proxy='1337x.to', cache='~git/REDBOT_1337X_CACHE', cacheTime=500)
+                clientX = py1337x(proxy='1337x.to', cache='~/REDBOT_1337X_CACHE', cacheTime=500)
                 result = clientX.search(query)['items']
                 msg = ""
             if len(result) < int(count):
