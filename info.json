@@ -1,0 +1,9 @@
+{
+    "author" : ["BitterSweet#1337)"],
+    "install_msg" : "Here's a message saying you installed my repo.\nHere's the link to my server for stuff: https://discord.com/invite/ChS8MZDPRA.\nThen lastsly, a free ad by ME to install my other cogs: https://github.com/B1tterSw33t/BitterSweet-Cogs",
+    "name" : "BitterSweet-Cogs",
+    "short" : "Some more fucking cogs, You'll like them :D",
+    "requirements" : ["tabulate"],
+    "description" : "I don't know what to tell you, just go to the github, all the names are pretty self-explanatory, fucking hell. Have a good day :3 <3",
+    "tags" : ["util", "fun"]
+}
