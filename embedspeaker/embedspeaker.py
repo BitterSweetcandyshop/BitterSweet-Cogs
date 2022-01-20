@@ -12,54 +12,69 @@ class EmbedSpeaker(commands.Cog):
         self.conf = Config.get_conf(self, identifier="UNIQUE_ID", force_registration=True)
         self.conf.register_guild(allowed_channels=[])
 
-        @commands.group()
-        @commands.guild_only()
-        def embedspeaker(self, ctx):
-            """
-            Converets sent messages into embeds.
+    @commands.group()
+    @commands.guild_only()
+    async def embedspeaker(self, ctx):
+        """
+        Converets sent messages into embeds.
 
-            Specify a channel (by mention), if none is specified it will assume the channel where the command was typed.
-            """
-            pass
+        Specify a channel (by mention), if none is specified it will assume the channel where the command was typed.
+        """
+        pass
 
-        @embedspeaker.command()
-        @checks.admin_or_permissions(manage_guild=True)
-        async def add(self, ctx: commands.Context, channel_specified: Optional[discord.TextChannel] = None):
+    @embedspeaker.command()
+    @checks.admin_or_permissions(manage_guild=True)
+    async def add(self, ctx: commands.Context, channel_specified: Optional[discord.TextChannel] = None):
 
-            if not channel_specified:
-                channel_specified = ctx.channel
+        if not channel_specified:
+            channel_specified = ctx.channel
             current_channels = await self.conf.guild(ctx.guild).allowed_channels()
-            new_channel = {
-                "id": channel_specified.id,
-                "name": channel_specified.name
-            }
+        channel_specified = {
+            "id": channel_specified.id,
+            "name": channel_specified.name
+        }
 
+        if len(current_channels) > 0:
             for saved_channel in current_channels:
-                if saved_channel.id == new_channel.id:
-                    await ctx.send("Channel is already added")
+                if saved_channel["id"] == channel_specified["id"]:
+                    await ctx.send("Channel **{}** is already a embedspeaker channel.".format(channel_specified["name"]))
                     return
             
-            current_channels.append(new_channel)
-            await self.conf.guild(ctx.guild).allowed_channels.set(current_channels)
+        current_channels.append(channel_specified)
+        await self.conf.guild(ctx.guild).allowed_channels.set(current_channels)
+        await ctx.send("Added **{}** to embedspeaker.".format(channel_specified["name"]))
 
 
-        @embedspeaker.command()
-        @checks.admin_or_permissions(manage_guild=True)
-        async def remove(self, ctx, channel_specified: Optional[discord.TextChannel] = None):
+    @embedspeaker.command()
+    @checks.admin_or_permissions(manage_guild=True)
+    async def remove(self, ctx, channel_specified: Optional[discord.TextChannel] = None):
 
-            if not channel_specified:
-                channel_specified = ctx.channel
+        if not channel_specified:
+            channel_specified = ctx.channel
             current_channels = await self.conf.guild(ctx.guild).allowed_channels()
-            channel_specified = {
-                "id": channel_specified.id,
-                "name": channel_specified.name
-            }
+        channel_specified = {
+            "id": channel_specified.id,
+            "name": channel_specified.name
+        }
 
-            specified_removed = False
-            for i, saved_channel in enumerate(current_channels):
-                if saved_channel.id == channel_specified.id:
-                    current_channels.pop(i)
-                    specified_removed = True
+        if len(current_channels) == 0:
+            await ctx.send("You have no channels on embedspeaker.")
+            return
+
+        specified_removed = False
+        for i, saved_channel in enumerate(current_channels):
+            if saved_channel["id"] == channel_specified["id"]:
+                current_channels.pop(i)
+                await self.conf.guild(ctx.guild).allowed_channels.set(current_channels.pop(i))
+                specified_removed = True
             
-            if specified_removed:
-                ctx.send("Removed {} from embedspeaker".format(channel_specified.name))
+        if specified_removed:
+            await ctx.send("Removed **{}** from embedspeaker.".format(channel_specified["name"]))
+        else:
+            await ctx.send("Channel **{}** wasn't an embedspeaker channel.".format(channel_specified["name"]))
+
+
+    @embedspeaker.command()
+    async def reset(self, ctx):
+        await self.conf.guild(ctx.guild).allowed_channels.set([])
+        await ctx.send("DONE!!!")
