@@ -43,9 +43,9 @@ Simple tool to convert messages into embeds the moment they're sent.
     - Honestly if you need an explanation, don't use this cog, or join my sever.
 - `rcl config`
     - `rcl config add`
-        - Add a remote, you copy paste this fromt he rclone config file.
+        - Add a remote, you copy paste this front he rclone config file.
     - `rcl config reset`
-        - Deltes all saved remotes, there's no confirmation message.
+        - Deletes all saved remotes, there's no confirmation message.
 
 ### Todo
 - honestly to long to make a list, the features are any that are not related to data transfer for now since I don't want to destroy my vps and cost myself a lot of money... Maybe I should settup a donation feaute? I like money.
