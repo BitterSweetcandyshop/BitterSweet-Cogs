@@ -32,7 +32,7 @@ class RCL(commands.Cog):
         """List the remotes you have stored."""
         config = await compile_config(self, ctx)
         if not config:
-            ctx.send("No remotes where found.")
+            await ctx.send("No remotes where found.")
             return
         result = rclone.with_config(config).listremotes()
         result = result.get("out")
@@ -54,30 +54,38 @@ one per line.  The directories will have a / suffix.
         """
         config = await compile_config(self, ctx)
         if not config:
-            ctx.send("No remotes where found.")
+            await ctx.send("No remotes where found.")
             return
         print(remote)
         result = rclone.with_config(config).run_cmd(command="lsf", extra_args=[remote])
         result = str(result.get("out") or result.get("error") or result.get("code")).replace("\\n", "\n")[2:-1]
-        if len(result) > 1000:
-            ctx.send("The message was too large.")
+        if len(result) > 1990:
+            await ctx.send("The message was too large.")
             return
         await ctx.send("```" + result + "```")
 
 
     @rcl.command()
     @checks.admin_or_permissions(manage_guild=True)
-    async def raw(self, ctx, command: str, *, args: str):
+    async def raw(self, ctx, command: str, *, args: str = "RCL_NONE"):
         """
         Runs any rclone command like the console.
         Using a data transfer commnad can be taxing on the bot's host!
         """
         config = await compile_config(self, ctx)
         if not config:
-            ctx.send("No remotes where found.")
+            await ctx.send("No remotes where found.")
             return
-        result = rclone.with_config(config).run_cmd(command=command, extra_args=args.split(" "))
-        await ctx.send("```" + str(result.get("out")).replace("\\n", "\n")[2:-1] + "```")
+        result = rclone.with_config(config)
+        if args == "RCL_NONE":
+            result = result.run_cmd(command=command)
+        else:
+            result = result.run_cmd(command=command, extra_args=args.split(" "))
+        
+        if len(result) > 1990:
+            await ctx.send("The message was too large.")
+            return
+        await ctx.send("```" + str(result.get("out") or result.get("error")).replace("\\n", "\n")[2:-1] + "```")
 
     @rcl.group()
     @checks.admin_or_permissions(manage_guild=True)
@@ -93,15 +101,31 @@ one per line.  The directories will have a / suffix.
 
         Rember, when you paste it to delete accidental newlines.
         """
-        print(config)
         remotes = await self.conf.guild(ctx.guild).remotes()
         remote_name = config.splitlines()[0][1:-1]
         remotes.append({
             "remote_name": remote_name,
             "config": config
         })
-        print(remotes)
         await self.conf.guild(ctx.guild).remotes.set(remotes)
+        await ctx.send("Added the remote **{}**.".format(remote_name))
+
+    @config.command()
+    async def remove(self, ctx, remote_name: str):
+        """
+        Removes a specified remote from the system.
+        You do not put the `:` at the end.
+
+        There is no confirmation message.
+        """
+        old_remotes = await self.conf.guild(ctx.guild).remotes()
+        new_remotes = []
+        for remote in old_remotes:
+            if not remote["remote_name"] ==  remote_name:
+                new_remotes += remote
+        
+        await self.conf.guild(ctx.guild).remotes.set(new_remotes)
+        await ctx.send("Removed the remote **{}**.".format(remote_name))
 
     @config.command()
     async def reset(self, ctx):
