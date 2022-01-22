@@ -8,7 +8,7 @@ async def compile_config(self, ctx):
             return False
         remote_configs = ""
         for remote in remotes:
-            remote_configs += remote["config"]
+            remote_configs += remote["config"] + "\n\n"
         return remote_configs
 
 class RCL(commands.Cog):
@@ -27,6 +27,7 @@ class RCL(commands.Cog):
         """Use rclone"""
         pass
 
+# Commands to veiw drive contents
     @rcl.command()
     async def listremotes(self, ctx):
         """List the remotes you have stored."""
@@ -39,7 +40,7 @@ class RCL(commands.Cog):
         result_formmated = "```"
         for res in result.splitlines():
             print(res)
-            result_formmated += str(res)[2:-1]
+            result_formmated += str(res)[2:-1] + "\n"
         await ctx.send(result_formmated + "\n```")
 
     @rcl.command()
@@ -87,6 +88,8 @@ one per line.  The directories will have a / suffix.
             return
         await ctx.send("```" + str(result.get("out") or result.get("error")).replace("\\n", "\n")[2:-1] + "```")
 
+
+# Config commands
     @rcl.group()
     @checks.admin_or_permissions(manage_guild=True)
     async def config(self, ctx):
