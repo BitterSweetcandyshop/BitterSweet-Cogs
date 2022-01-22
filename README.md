@@ -39,11 +39,18 @@ Simple tool to convert messages into embeds the moment they're sent.
 > Rclone fronted for discord
 
 ### Commands
+> Spaces in filepaths (yes even with quotes) do not work currently for some reason.
 - `rcl listremotes`
-    - Honestly if you need an explanation, don't use this cog, or join my sever.
+- `rcl raw <stuff>`
+    - Anything put after this is the same as running an rclone command in cosole
+    > Careful running data managment commands, it can be taxing on your vps
+- `rcl lsf <remote_path>`
+    
 - `rcl config`
     - `rcl config add`
         - Add a remote, you copy paste this front he rclone config file.
+    - `rcl config remove`
+        - Removes a remote from the saved config
     - `rcl config reset`
         - Deletes all saved remotes, there's no confirmation message.
 
