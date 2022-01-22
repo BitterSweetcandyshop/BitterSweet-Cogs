@@ -1,7 +1,7 @@
 {
     "author": ["BitterSweet#1337"],
     "description": "Use copy, listremotes, sync, delete, lsjson, and ls",
-    "install_msg": "Use [p]help rclone for commands\nIf you need help or anything join my server: https://discord.com/invite/ChS8MZDPRA",
+    "install_msg": "**INSTALL RCLONE CLI TO YOUR SYSTEM (not venv), THIS IS JUST A WRAPPER**\nYou can use the universal install: `curl https://rclone.org/install.sh | sudo bash` to install onto your system.\n\nUse [p]help rcl for commands\nIf you need help or anything join my server: https://discord.com/invite/ChS8MZDPRA",
     "short": "Use rclone with Red!",
     "requirements" : [
         "python-rclone"
