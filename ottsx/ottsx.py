@@ -28,7 +28,7 @@ async def make_embed(self, torrent_link):
 
         embed = discord.Embed(
             title=torrent_info["shortName"],
-                url=torrent_link,
+            url=torrent_link,
            description=f"*{torrent_info['name']}*\n\n{torrent_info['description']}"
         )
         embed = embed.add_field(
@@ -37,7 +37,7 @@ async def make_embed(self, torrent_link):
             inline=False
         )
         embed = embed.add_field(
-            name="Genres: " + (", ".join(torrent_info["genre"] or "Not Found")),
+            name="Genres: " + (", ".join(torrent_info["genre"]) or " *Not Found*"),
             value=f"**Uploaded by:** {torrent_info['uploader']} *({torrent_info['uploadDate']})*",
             inline=False
         )
