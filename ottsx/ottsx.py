@@ -36,8 +36,10 @@ async def make_embed(self, torrent_link):
             value=f"||{short_magnet}||",
             inline=False
         )
+        if not torrent_info["genre"]:
+            torrent_info["genre"] = ["Not Found"]
         embed = embed.add_field(
-            name="Genres: " + (", ".join(torrent_info["genre"]) or " *Not Found*"),
+            name="Genres: " + ", ".join(torrent_info["genre"]),
             value=f"**Uploaded by:** {torrent_info['uploader']} *({torrent_info['uploadDate']})*",
             inline=False
         )
