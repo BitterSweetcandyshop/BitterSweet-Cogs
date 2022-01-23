@@ -108,7 +108,7 @@ class ottsx(commands.Cog):
                     pages.append(new_page)
 
             if len(pages) == 0:
-                ctx.send(f"Sorry, no results for **{query}**.")
+                await ctx.send(f"Sorry, no results for **{query}**.")
                 return
 
             await menu(ctx, pages, DEFAULT_CONTROLS)
