@@ -97,15 +97,15 @@ class ottsx(commands.Cog):
             async with ctx.typing():
                 clientX = py1337x(proxy='1337x.to')
                 result = clientX.search(query)['items']
-            if len(result) < int(count):
-                count = len(result)
-                for res in result[0:int(count):]:
-                    new_page = await make_embed(self, res["link"])
-                    pages.append(new_page)
-            else:
-                for res in result[0:int(count):]:
-                    new_page = await make_embed(self, res["link"])
-                    pages.append(new_page)
+                if len(result) < int(count):
+                    count = len(result)
+                    for res in result[0:int(count):]:
+                        new_page = await make_embed(self, res["link"])
+                        pages.append(new_page)
+                else:
+                    for res in result[0:int(count):]:
+                        new_page = await make_embed(self, res["link"])
+                        pages.append(new_page)
 
             if len(pages) == 0:
                 await ctx.send(f"Sorry, no results for **{query}**.")
@@ -115,6 +115,42 @@ class ottsx(commands.Cog):
 
         except AttributeError:
             await ctx.send(f"Sorry, no results for **{query}** or there was an error.")
+
+    @ottsx.command()
+    async def browse(self, ctx, category:str = "movies"):
+        clientX = py1337x(proxy='1337x.to')
+
+        # get about 200 results and put it all into an array 
+        item_full_list = []
+        page_number = 1
+        async with ctx.typing():
+            while page_number < 10:
+                results = clientX.browse(category, page_number)
+                if (len(results["items"])) == 0:
+                    await ctx.send("That category does not seem to exsist.")
+                    return
+                formatted_items = []
+                for item in results["items"]:
+                    formatted_items.append(f"""[{item["name"]}]({item["link"]})
+                    Uploaded by: {item["uploader"]} ({item["time"]})
+                    Seeders: {item["seeders"]} | Leachers: {item["leechers"]}
+                    """
+                    )
+                cut_items_int = len(formatted_items)//2
+                item_full_list.append(formatted_items[:cut_items_int])
+                item_full_list.append(formatted_items[cut_items_int:])
+                page_number += 1
+
+            pages = []
+            for i, item_list in enumerate(item_full_list):
+                embed = discord.Embed(
+                    title="Browsing 1337x",
+                    description="\n".join(item_list) + f"\npage: {i+1}/{len(item_full_list)}"
+                    
+                )
+                pages.append(embed)
+
+        await menu(ctx, pages, DEFAULT_CONTROLS)
 
     @ottsx.command()
     @checks.admin_or_permissions(manage_guild=True)
@@ -136,7 +172,6 @@ class ottsx(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        print("New message thing")
         torrent_link = re.search("https?:\/\/www\.1337x\.\w{2}\/torrent\/\S+", message.content)
         if not torrent_link:
             return
