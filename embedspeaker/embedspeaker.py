@@ -104,4 +104,5 @@ class EmbedSpeaker(commands.Cog):
                 icon_url=user.avatar_url
             )
             await self.bot.send_filtered(message.channel, embed=embed)
+            await message.delete()
             return
