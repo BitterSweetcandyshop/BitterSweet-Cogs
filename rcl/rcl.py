@@ -14,6 +14,7 @@ async def compile_config(self, ctx):
 class RCL(commands.Cog):
     """
     Use rclone!
+    > Error with using spaces, even in quotes. 
     """
     
     def __init__(self, bot):

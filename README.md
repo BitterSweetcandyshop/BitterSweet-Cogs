@@ -14,8 +14,14 @@ Basicaly a dupe of the nyaa cog, but redone for 1337x.
 I plan on expanding this to do some other features, but for now it's a start.
 
 ### Commands
-- `ottsx lookup <query>`
+> ottsx/torrent/1337x
+- `ottsx lookup/search <query>`
     - Search for a torrent
+- `ottsx browse`
+    - Browse the main page baiscally on 1337x
+- `ottsx smartlink <toggle>`
+    - Enable/disable a channel to detect 1337x links, and have the bot send a message like in `ottsx lookup`
+
 
 ### Todo
 - [ ] Detect links in chat and give information

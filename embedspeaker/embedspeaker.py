@@ -7,8 +7,6 @@ class EmbedSpeaker(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
-        # I feel smart: My github username has the numbers 1 and 3 swapped
-        #the last three numbers are the index, so this is cog-config 1
         self.conf = Config.get_conf(self, identifier="UNIQUE_ID", force_registration=True)
         self.conf.register_guild(allowed_channels=[])
 
@@ -73,9 +71,10 @@ class EmbedSpeaker(commands.Cog):
 
 
     @embedspeaker.command()
+    @checks.admin_or_permissions(manage_guild=True)
     async def reset(self, ctx):
         await self.conf.guild(ctx.guild).allowed_channels.set([])
-        await ctx.send("DONE!!!")
+        await ctx.send("Removed all channels from embedspeaker.")
 
 
     @commands.Cog.listener()

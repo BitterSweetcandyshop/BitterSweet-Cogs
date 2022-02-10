@@ -83,12 +83,12 @@ class ottsx(commands.Cog):
         self.conf.register_channel(smartlink_enabled=False)
 
 
-    @commands.group()
+    @commands.group(aliases=["torrent", "1337x"])
     @commands.guild_only()
     async def ottsx(self, ctx):
         """Search 1337x.to."""
 
-    @ottsx.command()
+    @ottsx.command(aliases=["search", "ts"])
     async def lookup(self, ctx, *, query: str):
         """Search all of 1337x."""
         count = "20"
