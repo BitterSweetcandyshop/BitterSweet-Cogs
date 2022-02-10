@@ -23,9 +23,6 @@ I plan on expanding this to do some other features, but for now it's a start.
     - Enable/disable a channel to detect 1337x links, and have the bot send a message like in `ottsx lookup`
 
 
-### Todo
-- [ ] Detect links in chat and give information
-
 ## EMBEDSPEAKER
 > Messages to Embeds
 
@@ -61,4 +58,4 @@ Simple tool to convert messages into embeds the moment they're sent.
         - Deletes all saved remotes, there's no confirmation message.
 
 ### Todo
-- honestly to long to make a list, the features are any that are not related to data transfer for now since I don't want to destroy my vps and cost myself a lot of money... Maybe I should settup a donation feaute? I like money.
+- honestly to long to make a list, the features are any that are not related to data transfer for now since I don't want to destroy my vps and cost myself a lot of money... Maybe I should settup a donation feature? I like money.
