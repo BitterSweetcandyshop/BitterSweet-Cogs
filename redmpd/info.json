@@ -1,0 +1,10 @@
+{
+    "author": ["BitterSweet#1337"],
+    "description": "Just a frontend of mpd for people so they can let people control your mpd, a totally great idea.",
+    "install_msg": "Thanks, for supporting my horrible idea that is oddly really cool.\n`[p]help mpd` for commands.",
+    "short": "Let people control other people's mpd clients",
+    "requirements": [
+        "python-mpd2",
+        "table2ascii"
+    ]
+}

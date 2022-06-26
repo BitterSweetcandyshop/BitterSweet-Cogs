@@ -5,8 +5,11 @@ import re
 import json
 import aiohttp
 import discord
+from ottsx.utils import uTils
 from py1337x import py1337x
+from bs4 import BeautifulSoup
 from redbot.core import commands, Config, checks
+from requests_futures.sessions import FuturesSession
 from redbot.core.utils.menus import DEFAULT_CONTROLS, menu
 
 # Based primebot (https://github.com/pryme-svg/PrimeBot/blob/master/primebot/ext/torrent.py#L31)
@@ -18,11 +21,11 @@ async def shorten(self, magnet: str):
     res = json.loads(res)
     return res["shorturl"]
 
-async def make_embed(self, torrent_link):
+async def make_embed(self, torrent_link, page: int, count:int):
     try:
         clientX = py1337x(proxy='1337x.to')
         torrent_info = py1337x().info(torrent_link)
-        print(torrent_info['name'])
+        print(f"Fetching: {torrent_info['name']}")
 
         short_magnet = await shorten(self, torrent_info["magnetLink"])
 
@@ -63,6 +66,9 @@ async def make_embed(self, torrent_link):
             value=torrent_info["leechers"],
             inline=True
         )
+        embed = embed.set_footer(
+            text=f"page: ({str(page)}/{str(count)})"
+        )
 
         if torrent_info["thumbnail"]:
             embed = embed.set_thumbnail(
@@ -83,29 +89,53 @@ class ottsx(commands.Cog):
         self.conf.register_channel(smartlink_enabled=False)
 
 
-    @commands.group(aliases=["torrent", "1337x"])
+    @commands.group(aliases=["1337x"])
     @commands.guild_only()
     async def ottsx(self, ctx):
         """Search 1337x.to."""
 
-    @ottsx.command(aliases=["search", "ts"])
+    @ottsx.command(aliases=["quicksearch", "q", "qs", "quicklookup", "ql"])
+    async def quick(self, ctx, *, query: str):
+        try:
+            async with ctx.typing():
+                results = uTils().search(query)
+                print(results)
+                format = []
+                for i, res in enumerate(results):
+                    format.append(f"""
+                    **{i+1}. [{res['name']}]({res['url']})**
+                    **[Magnet]({await shorten(self, res["magnet"])})** | Seeders: {res['seeders']} | Size: {res['size']} 
+                    """)
+
+                embed = discord.Embed(
+                    description="".join(format)
+                )
+                embed = embed.set_author(
+                        name=ctx.author.display_name,
+                        icon_url=ctx.author.avatar_url
+                )
+
+                await ctx.send(content="", embed=embed)
+            
+        except AttributeError:
+            await ctx.send(f"Sorry, no results for **{query}** or there was an error.")
+
+
+    @ottsx.command(aliases=["search", "s"])
     async def lookup(self, ctx, *, query: str):
-        """Search all of 1337x."""
-        count = "20"
+        """Search 1337x and get all information."""
+        count = 10
         pages = []
         try:
             async with ctx.typing():
                 clientX = py1337x(proxy='1337x.to')
-                result = clientX.search(query)['items']
-                if len(result) < int(count):
+                result = clientX.search(query, sortBy='seeders', page=1)['items']
+                print(result)
+                if len(result) < count:
                     count = len(result)
-                    for res in result[0:int(count):]:
-                        new_page = await make_embed(self, res["link"])
-                        pages.append(new_page)
-                else:
-                    for res in result[0:int(count):]:
-                        new_page = await make_embed(self, res["link"])
-                        pages.append(new_page)
+                for i, res in enumerate(result[0:count:]):
+                    new_page = await make_embed(self, res["link"], (i+1), count)
+                    pages.append(new_page)
 
             if len(pages) == 0:
                 await ctx.send(f"Sorry, no results for **{query}**.")

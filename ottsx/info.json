@@ -4,6 +4,8 @@
     "install_msg": "Usage is `[p]ottsx lookup` to search.\nIf you need help or anything join my server: https://discord.com/invite/ChS8MZDPRA",
     "short": "Search 1337x",
     "requirements" : [
-        "1337x"
+        "1337x",
+        "bs4",
+        "requests-futures"
     ]
 }
