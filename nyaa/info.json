@@ -1,0 +1,23 @@
+{
+  "author": ["Wyn", "BitterSweet#1337"],
+  "install_msg": "Thank you for installing Nyaa Searcher. Type `[p]nyaa` for more information.",
+  "name": "Nyaa Searcher",
+  "short": "Obtains torrent info",
+  "description": "Obtains torrent info from nyaa.si",
+  "disabled": false,
+  "tags": [
+    "nyaa"
+  ],
+  "requirements": [
+    "bs4",
+    "requests-futures"
+  ],
+  "permissions": [
+    "add_reactions",
+    "embed_links"
+  ],
+  "min_python_version": [
+    3, 6, 0
+  ],
+  "end_user_data_statement": "This cog does not persistently store data or metadata about users."
+}
