@@ -19,6 +19,41 @@ class Utils:
 
         return category_name
 
+    def single_parse(header, target, footer, link):
+        block = []
+        for row in target:
+            if row.select('[class="col-md-5"]'):
+                for md5 in row.select('[class="col-md-5"]'):
+                    block.append(md5.text)
+                    if md5.find_all('a'):
+                        for a in md5.find_all('a'):
+                            if a.get('href'): block.append(a.get('href'))
+                    #if (md5.get('herf')): block.append(md5.get('href'))
+        
+        for a in footer:
+           if a.get('href'): block.append(a.get('href'))
+
+
+        torrent = {}
+        try:
+            torrent = {
+                'category': block[0][1:-1],
+                'categoryRaw': block[2].replace('/?c=', ''),
+                'url': link,
+                'name': header[0].text[4:-4],
+                'download_url': f"http://nyaa.si{block[13]}",
+                'magnet': block[14],
+                'size': block[10],
+                'date': block[3],
+                'seeders': block[6],
+                'leechers': block[9],
+                'completed_downloads': block[11],
+            }
+        except IndexError as ie:
+            pass
+        return torrent
+
+
     def parse_nyaa(table_rows, limit):
 
         torrents = []
@@ -53,7 +88,6 @@ class Utils:
 
                 torrents.append(torrent)
             except IndexError as ie:
-                print(ie)
                 pass
 
         return torrents

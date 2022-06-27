@@ -67,7 +67,7 @@ class Nyaa(commands.Cog):
 
 
     @nyaa.command(aliases=['search', 's'])
-    @commands.cooldown(1, 3, commands.BucketType.user)
+    @commands.cooldown(1, 5, commands.BucketType.user)
     @commands.bot_has_permissions(embed_links=True, add_reactions=True)
     async def lookup(self, ctx, *, show_name: str):
         """
@@ -79,7 +79,6 @@ class Nyaa(commands.Cog):
         try:
             async with ctx.typing():
                 result = self.search(show_name)
-                print(result)
                 count = len(result)
                 pages = []
 
@@ -107,22 +106,38 @@ class Nyaa(commands.Cog):
 
         current_status = await self.conf.channel(ctx.channel).nyaa_smartlink_enabled()
         
-        await self.conf.channel(ctx.channel).smartlink_enabled.set(not current_status)
+        await self.conf.channel(ctx.channel).nyaa_smartlink_enabled.set(not current_status)
         await ctx.send("The channel **{}** now has smartlink as **{}**.".format(ctx.channel.name, not current_status))
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        torrent_link = re.search(r'https?:\/\/(?:www\.)?1337x\.\w{2}\/torrent\/\S+', message.content)
+        torrent_link = re.search(r'https?:\/\/(?:www\.)?nyaa\.\w{2}\/view\/\S+', message.content)
         if not torrent_link: return
         torrent_link = torrent_link.group()
 
         smartlink_enabled = await self.conf.channel(message.channel).nyaa_smartlink_enabled()
         if not smartlink_enabled: return
 
-        await message.channel.send(content="nice")
+        torrent = self.single_nyaa(torrent_link)
+        embed = await self.make_embed(torrent)
+
+        await message.channel.send(content="", embed=embed)
 
 
-    async def make_embed(self, res, i:int=1, count:int=1):
+    def single_nyaa(self, link:str):
+        headers = {'User-Agent': 'Mozilla/5.0 (X11; Arch Linux; Linux x86_64; rv:66.0) Gecko/20100101 Firefox/66.0'}
+        session = FuturesSession()
+
+        r = session.get(link, headers=headers)
+        soup = BeautifulSoup(r.result().text, 'html.parser')
+        target = soup.select('body div div div [class="row"]')
+        header = soup.select('[class="panel-title"]')
+        footer = soup.select('[class="panel panel-danger"] [class="panel-footer clearfix"] a')
+
+        return uTils.single_parse(header, target, footer, link)
+
+
+    async def make_embed(self, res, i:int=0, count:int=1):
         embed = discord.Embed(
             title=res["name"],
             url=res["url"],
@@ -147,7 +162,7 @@ class Nyaa(commands.Cog):
             inline=True
         )
         embed.set_footer(
-            text=f"page: ({str(i+1)}/{str(len(res))})"
+            text=f"page: ({str(i+1)}/{str(count)})"
         )
         embed = embed.set_thumbnail(
             url=f"https://nyaa.si/static/img/icons/nyaa/{res['categoryRaw']}.png"
