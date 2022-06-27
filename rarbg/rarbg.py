@@ -36,6 +36,7 @@ class rarbg(commands.Cog):
 
     @rarbg.command(aliases=["quicksearch", "q", "qs", "quicklookup", "ql"])
     async def quick(self, ctx, *, query: str):
+        """Quicky search rarbg for torrents"""
         try:
             def format_bytes(size):
                 # 2**10 = 1024

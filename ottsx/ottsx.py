@@ -96,6 +96,7 @@ class ottsx(commands.Cog):
 
     @ottsx.command(aliases=["quicksearch", "q", "qs", "quicklookup", "ql"])
     async def quick(self, ctx, *, query: str):
+        """Quickly search 1337x"""
         try:
             async with ctx.typing():
                 results = uTils().search(query)
@@ -148,6 +149,7 @@ class ottsx(commands.Cog):
 
     @ottsx.command()
     async def browse(self, ctx, category:str = "movies"):
+        """Go through torrents on a main category page."""
         clientX = py1337x(proxy='1337x.to')
 
         # get about 200 results and put it all into an array 
@@ -157,8 +159,9 @@ class ottsx(commands.Cog):
             while page_number < 10:
                 results = clientX.browse(category, page_number)
                 if (len(results["items"])) == 0:
-                    await ctx.send("That category does not seem to exsist.")
-                    return
+                    return await ctx.send("""That category does not seem to exsist.
+Please choose from `games`, `music`,`software`,`tv`,`movies`, and `xxx`
+                    """)
                 formatted_items = []
                 for item in results["items"]:
                     formatted_items.append(f"""[{item["name"]}]({item["link"]})

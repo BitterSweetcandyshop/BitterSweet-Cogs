@@ -1,6 +1,6 @@
 {
   "author": ["BitterSweet#1337"],
-  "install_msg": "Eat my ass",
+  "install_msg": "Usage is `[p]rarbg quick` to search.\nIf you need help or anything join my server: https://discord.com/invite/ChS8MZDPRA",
   "name": "Rarbg Search",
   "short": "Obtains rarbg torrent info",
   "description": "Obtains torrent info from rarbg.to",
