@@ -35,6 +35,7 @@ class rarbg(commands.Cog):
         """Search Rarbg"""
 
     @rarbg.command(aliases=["quicksearch", "q", "qs", "quicklookup", "ql"])
+    @commands.cooldown(1, 3, commands.BucketType.user)
     async def quick(self, ctx, *, query: str):
         """Quicky search rarbg for torrents"""
         try:

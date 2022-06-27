@@ -95,6 +95,7 @@ class ottsx(commands.Cog):
         """Search 1337x.to."""
 
     @ottsx.command(aliases=["quicksearch", "q", "qs", "quicklookup", "ql"])
+    @commands.cooldown(1, 3, commands.BucketType.user)
     async def quick(self, ctx, *, query: str):
         """Quickly search 1337x"""
         try:
@@ -123,6 +124,7 @@ class ottsx(commands.Cog):
 
 
     @ottsx.command(aliases=["search", "s"])
+    @commands.cooldown(1, 5, commands.BucketType.user)
     async def lookup(self, ctx, *, query: str):
         """Search 1337x and get all information."""
         count = 10
@@ -148,6 +150,7 @@ class ottsx(commands.Cog):
             await ctx.send(f"Sorry, no results for **{query}** or there was an error.")
 
     @ottsx.command()
+    @commands.cooldown(1, 3, commands.BucketType.user)
     async def browse(self, ctx, category:str = "movies"):
         """Go through torrents on a main category page."""
         clientX = py1337x(proxy='1337x.to')
