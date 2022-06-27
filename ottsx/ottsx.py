@@ -21,7 +21,7 @@ async def shorten(self, magnet: str):
     res = json.loads(res)
     return res["shorturl"]
 
-async def make_embed(self, torrent_link, page: int, count:int):
+async def make_embed(self, torrent_link, page:int=1, count:int=1):
     try:
         clientX = py1337x(proxy='1337x.to')
         torrent_info = py1337x().info(torrent_link)
@@ -208,7 +208,7 @@ Please choose from `games`, `music`,`software`,`tv`,`movies`, and `xxx`
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        torrent_link = re.search("https?:\/\/www\.1337x\.\w{2}\/torrent\/\S+", message.content)
+        torrent_link = re.search(r'https?:\/\/(?:www\.)?1337x\.\w{2}\/torrent\/\S+', message.content)
         if not torrent_link:
             return
 
