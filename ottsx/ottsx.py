@@ -101,7 +101,6 @@ class ottsx(commands.Cog):
         try:
             async with ctx.typing():
                 results = uTils().search(query)
-                print(results)
                 format = []
                 for i, res in enumerate(results):
                     format.append(f"""
@@ -133,7 +132,6 @@ class ottsx(commands.Cog):
             async with ctx.typing():
                 clientX = py1337x(proxy='1337x.to')
                 result = clientX.search(query, sortBy='seeders', page=1)['items']
-                print(result)
                 if len(result) < count:
                     count = len(result)
                 for i, res in enumerate(result[0:count:]):
