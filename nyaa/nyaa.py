@@ -77,8 +77,9 @@ class Nyaa(commands.Cog):
         """
         try:
             async with ctx.typing():
-                result = self.search(show_name, page)
+                result = self.search(show_name)
                 count = len(result)
+                if not count: return await ctx.send(f"There was no results for `{show_name}`")
                 pages = []
 
                 #if not result: return await ctx.send(f"There was no results for `{show_name}`")

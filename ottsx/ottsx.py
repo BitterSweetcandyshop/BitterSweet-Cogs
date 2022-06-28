@@ -87,6 +87,7 @@ class ottsx(commands.Cog):
         self.bot = bot
         self.conf = Config.get_conf(self, identifier="UNIQUE_ID", force_registration=True)
         self.conf.register_channel(smartlink_enabled=False)
+        self.conf.register_guild(bans=['yify'])
 
 
     @commands.group(aliases=["1337x"])
@@ -186,9 +187,11 @@ Please choose from `games`, `music`,`software`,`tv`,`movies`, and `xxx`
 
         await menu(ctx, pages, DEFAULT_CONTROLS)
 
+
     @ottsx.command()
+    @commands.guild_only()
     @checks.admin_or_permissions(manage_guild=True)
-    async def smartlink(self, ctx, toggle: bool):
+    async def smartlink(self, ctx):
         """
         Smartlink for OTTSX makes it so whenever a link is sent in an enabled channel. \
         It well fetch data off 1337x about the torrent
@@ -197,12 +200,9 @@ Please choose from `games`, `music`,`software`,`tv`,`movies`, and `xxx`
         """
 
         current_status = await self.conf.channel(ctx.channel).smartlink_enabled()
-        if toggle == current_status:
-            await ctx.send("The channel **{}** is already set to **{}** for smartlink.".format(ctx.channel.name, toggle))
-            return
         
-        await self.conf.channel(ctx.channel).smartlink_enabled.set(toggle)
-        await ctx.send("The channel **{}** now has smartlink as **{}**.".format(ctx.channel.name, toggle))
+        await self.conf.channel(ctx.channel).smartlink_enabled.set(not current_status)
+        await ctx.send("The channel **{}** now has smartlink as **{}**.".format(ctx.channel.name, not current_status))
 
     @commands.Cog.listener()
     async def on_message(self, message):
@@ -218,3 +218,42 @@ Please choose from `games`, `music`,`software`,`tv`,`movies`, and `xxx`
 
         embed = await make_embed(self, torrent_link)
         await message.channel.send(embed=embed)
+
+
+
+    @ottsx.group()
+    @commands.guild_only()
+    @checks.admin_or_permissions(manage_guild=True)
+    async def ban(self, ctx):
+        """Mange banned phrases. All bans will be checked for in the uploader and torrent name
+
+The ban list ONLY applies to `quicksearch` and `search` commands."""
+
+    @ban.command()
+    async def add(self, ctx, *, target:str):
+        """Add a ban"""
+        db_bans = await self.conf.guild(ctx.guild).bans()
+        if db_bans.count(target.lower()): return await ctx.send(f"{target} is already on the ban list.")
+        db_bans.append(target.lower())
+        await self.conf.guild(ctx.guild).bans.set(db_bans)
+        if not len(db_bans): return await ctx.send(f"Added {target} to the ban list.")
+        await ctx.send(f"Added {target} to the ban list.\nCurrent bans: {', '.join(db_bans)}")
+
+    @ban.command(aliases=['del', 'delete', 'rem'])
+    async def remove(self, ctx, *, target:str):
+        """Remove a ban"""
+        db_bans = await self.conf.guild(ctx.guild).bans()
+        try:
+            db_bans.remove(target.lower())
+        except ValueError():
+            return await ctx.send(f"{target} is not on the ban list.")
+        await self.conf.guild(ctx.guild).bans.set(db_bans)
+        if not len(db_bans): return await ctx.send(f"Ban list is now empty")
+        await ctx.send(f"Added {target} to the ban list.\nCurrent bans: {', '.join(db_bans)}")
+
+    @ban.command()
+    async def list(self, ctx):
+        """List all current bans"""
+        db_bans = await self.conf.guild(ctx.guild).bans()
+        if not len(db_bans): return await ctx.send(f"Ban list is empty")
+        await ctx.send(f"Current bans: {', '.join(db_bans)}")
