@@ -1,3 +1,4 @@
+import re
 import math
 import json
 import aiohttp
@@ -14,7 +15,6 @@ async def shorten(self, magnet: str):
     async with aiohttp.ClientSession() as session:
         async with session.get("http://mgnet.me/api/create?&format=json&opt=&m={}".format(magnet)) as response:
             res = await response.read()
-    print(res)
     res = json.loads(res)
     return res["shorturl"]
 
@@ -40,7 +40,6 @@ class rarbg(commands.Cog):
         """Quicky search rarbg for torrents"""
         try:
             def format_bytes(size):
-                # 2**10 = 1024
                 power = 2**10
                 n = 0
                 power_labels = {0 : '', 1: 'Kb', 2: 'Mb', 3: 'GB', 4: 'Tb'}
@@ -52,11 +51,9 @@ class rarbg(commands.Cog):
             async with ctx.typing():
                 results = await self.rarbg_search(query, ctx.guild)
                 if not len(results): return await ctx.send(f"Sorry, no results for **{query}**")
-                print(results)
                 format = []
                 for i, res in enumerate(results):
                     if i > 9: break
-                    print(res['download'])
                     format.append(f"""
                     **{i+1}. [{res['title']}]({res['info_page']})**
                     **[Magnet]({await shorten(self, res["download"])})** | Seeders: {res['seeders']} | Size: {format_bytes(res['size'])} 
@@ -76,6 +73,35 @@ class rarbg(commands.Cog):
             await ctx.send(f"Sorry, no results for **{query}** or there was an error.")
 
 
+    @rarbg.command()
+    @checks.admin_or_permissions(manage_guild=True)
+    async def smartlink(self, ctx):
+        """
+        Smartlink for Rarbg makes it so whenever a link is sent in an enabled channel.
+        It will fetch data off rarbg about the torrent
+        _ _
+        Run the command in the channel you want enabled/disabled to toggle.
+        """
+
+        current_status = await self.conf.channel(ctx.channel).rarbg_smartlink_enabled()
+        
+        await self.conf.channel(ctx.channel).rarbg_smartlink_enabled.set(not current_status)
+        await ctx.send("The channel **{}** now has smartlink as **{}**.".format(ctx.channel.name, not current_status))
+
+    @commands.Cog.listener()
+    async def on_message(self, message):
+        torrent_link = re.search(r'https?:\/\/(?:www\.)?nyaa\.\w{2}\/view\/\S+', message.content)
+        if not torrent_link: return
+        torrent_link = torrent_link.group()
+
+        smartlink_enabled = await self.conf.channel(message.channel).rarbg_smartlink_enabled()
+        if not smartlink_enabled: return
+
+        torrent = self.single_nyaa(torrent_link)
+        embed = await self.make_embed(torrent)
+
+        await message.channel.send(content="", embed=embed)
+
     async def rarbg_search(self, query, guild, **kwargs):
         """
         Return a list of dicts with the results of the query.
@@ -84,17 +110,12 @@ class rarbg(commands.Cog):
         token = kwargs.get("token", False)
         if not token:
             token = await self.conf.guild(guild).rarbg_token()
-
-        print(token)
         r = requests.get(f"https://torrentapi.org/pubapi_v2.php?mode=search&search_string={query}&token={token}&app_id=torrent-api&format=json_extended&sort=seeders").json()
-        print(r)
         
         if len(r.keys()) > 1:
             if r['error_code'] == 20: return []
 
-            print("Getting new token")
             new_token = requests.get("https://torrentapi.org/pubapi_v2.php?get_token=get_token&app_id=torrent-api").json()['token']
-            print(f"New token: {new_token}")
             token = await self.conf.guild(guild).rarbg_token.set(new_token)
             sleep(3)
             return await self.rarbg_search(query, guild, token=token)

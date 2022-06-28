@@ -6,7 +6,6 @@ from bs4 import BeautifulSoup
 from redbot.core import commands, Config, checks
 from requests_futures.sessions import FuturesSession
 from redbot.core.utils.menus import DEFAULT_CONTROLS, menu
-
 from nyaa.utils import Utils as uTils
 
 
@@ -78,7 +77,7 @@ class Nyaa(commands.Cog):
         """
         try:
             async with ctx.typing():
-                result = self.search(show_name)
+                result = self.search(show_name, page)
                 count = len(result)
                 pages = []
 
@@ -138,12 +137,16 @@ class Nyaa(commands.Cog):
 
 
     async def make_embed(self, res, i:int=0, count:int=1):
+        author = ""
+        if res['uploader']:
+            author = f"\n**Uploader**: *[{res['uploader']}]({res['uploaderLink']})*"
+
         embed = discord.Embed(
             title=res["name"],
             url=res["url"],
             description=f"""
-            **Posted on** *{res['date']}*
-            **Magnet Link** ||*{await shorten(self, res["magnet"])}*||
+            **Posted on** *{res['date']}*{author}
+            **Download** *[Magnet]({await shorten(self, res['magnet'])}) [Torrent]({res['download_url']})*
             """
         )
         embed.add_field(
