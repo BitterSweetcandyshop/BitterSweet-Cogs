@@ -2,60 +2,12 @@
 > If you ever need help join my [server](https://discord.com/invite/ChS8MZDPRA)
 
 ## Cogs:
-- [OTTSX](https://github.com/B1tterSw33t/BitterSweet-Cogs#ottsx)
-- [EmbedSpeaker](https://github.com/B1tterSw33t/BitterSweet-Cogs#embedspeaker)
-- [RCL](https://github.com/B1tterSw33t/BitterSweet-Cogs#rcl)
+| Cog name | Description |
+| --- | --- |
+|ottsx|<details><summary>1337x related commands.</summary>Includes a `ban` section, `quicksearch`, `search`, and a smartlink to fetch info from a 1337x page.</details>  |
+|nyaa|<details><summary>Nyaa related commands</summary>Includes a `search` and smartlink feature to fetch info from a nyaa page.</details>|
+|rarbg|<details><summary>Rarbg related commands.</summary>Only has a `search` command at the moment</details>|
 
+> helpless cog is for personal use
 
-## OTTSX
-> Searching 1337x
-
-Basicaly a dupe of the nyaa cog, but redone for 1337x.
-I plan on expanding this to do some other features, but for now it's a start.
-
-### Commands
-> ottsx/torrent/1337x
-- `ottsx lookup/search <query>`
-    - Search for a torrent
-- `ottsx browse`
-    - Browse the main page baiscally on 1337x
-- `ottsx smartlink <toggle>`
-    - Enable/disable a channel to detect 1337x links, and have the bot send a message like in `ottsx lookup`
-
-
-## EMBEDSPEAKER
-> Messages to Embeds
-
-Simple tool to convert messages into embeds the moment they're sent.
-
-### Commands
-- `embedspeaker add`
-    - Enable the channel the command was sent in.
-- `embedspeaker remove`
-    - Disable the channel the command was sent in.
-### Todo
-- [ ] `embedspeaker embedstyle`
-    - Customize how the embed looks.
-- [ ] Support channel mentions for add/remove.
-
-## RCL
-> Rclone fronted for discord
-
-### Commands
-> Spaces in filepaths (yes even with quotes) do not work currently for some reason.
-- `rcl listremotes`
-- `rcl raw <stuff>`
-    - Anything put after this is the same as running an rclone command in cosole
-    > Careful running data managment commands, it can be taxing on your vps
-- `rcl lsf <remote_path>`
-    
-- `rcl config`
-    - `rcl config add`
-        - Add a remote, you copy paste this front he rclone config file.
-    - `rcl config remove`
-        - Removes a remote from the saved config
-    - `rcl config reset`
-        - Deletes all saved remotes, there's no confirmation message.
-
-### Todo
-- honestly to long to make a list, the features are any that are not related to data transfer for now since I don't want to destroy my vps and cost myself a lot of money... Maybe I should settup a donation feature? I like money.
+All other cogs not listed are not maintained
