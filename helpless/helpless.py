@@ -6,7 +6,7 @@ from redbot.core import commands
 exhelp: commands.Command = None
 exinfo: commands.Command = None
 class Helpless(commands.Cog):
-    """Obtain torrents from nyaa."""
+    """Help and Info"""
 
 
 
@@ -87,6 +87,9 @@ in one place. More importantly though I'm using this project to learn about pars
 **Backend/Source**
     This bot is actually an instance of [RedBot](https://github.com/Cog-Creators/Red-DiscordBot) So instead of a full source,
     You can settup a redbot instance, and load up [my cogs](https://github.com/bittersweetcandyshop/BitterSweet-Cogs).
+
+**Outside Commands**
+    AniList: [Wyn](https://github.com/TheWyn/Wyn-RedV3Cogs)
 
 **Contact**
     Discord: [BitterSweet#1337](https://discord.gg/nKdNFzHW)
