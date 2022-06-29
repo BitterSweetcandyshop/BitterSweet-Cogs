@@ -90,7 +90,7 @@ in one place. More importantly though I'm using this project to learn about pars
 
 **Outside Commands**
     AniList: [Wyn](https://github.com/TheWyn/Wyn-RedV3Cogs)
-    Valued Feddback: Bulldög#0533, DieDoesMC#0945, kekko#1337
+    Valued Feedback: Bulldög#0533, DieDoesMC#0945, kekko#1337
 
 **Contact**
     Discord: [BitterSweet#1337](https://discord.gg/nKdNFzHW)
