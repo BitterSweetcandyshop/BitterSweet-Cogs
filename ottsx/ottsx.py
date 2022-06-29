@@ -90,15 +90,10 @@ class ottsx(commands.Cog):
         self.conf.register_guild(bans=['yify'])
 
 
-    @commands.group(aliases=["1337x"])
+    @commands.group(aliases=["1337x", "torrent"], invoke_without_command=True)
     @commands.guild_only()
-    async def ottsx(self, ctx):
+    async def ottsx(self, ctx, *, query:str):
         """Search 1337x.to."""
-
-    @ottsx.command(aliases=["quicksearch", "q", "qs", "quicklookup", "ql"])
-    @commands.cooldown(1, 3, commands.BucketType.user)
-    async def quick(self, ctx, *, query: str):
-        """Quickly search 1337x"""
         try:
             async with ctx.typing():
                 results = uTils().search(query)
@@ -123,7 +118,7 @@ class ottsx(commands.Cog):
             await ctx.send(f"Sorry, no results for **{query}** or there was an error.")
 
 
-    @ottsx.command(aliases=["search", "s"])
+    @ottsx.command(aliases=["search", "s", "l"])
     @commands.cooldown(1, 5, commands.BucketType.user)
     async def lookup(self, ctx, *, query: str):
         """Search 1337x and get all information."""

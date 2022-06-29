@@ -59,10 +59,33 @@ class Nyaa(commands.Cog):
 
         return results
 
-    @commands.group()
+    @commands.group(invoke_without_command=True)
     @commands.guild_only()
-    async def nyaa(self, ctx):
+    async def nyaa(self, ctx, *, query:str):
         """Search anime."""
+        try:
+            async with ctx.typing():
+                results = self.search(query)
+                count = len(results)
+                if not count: return await ctx.send(f"There was no results for `{query}`")
+                format=[]
+                for i, res in enumerate(results):
+                    format.append(f"""
+                    **{i+1}. [{res['name']}]({res['url']})**
+                    **[Magnet]({await shorten(self, res["magnet"])}) - [Torrent]({res['download_url']})** | Seeders: {res['seeders']} | Size: {res['size']} 
+                    """)
+
+                embed = discord.Embed(
+                    description="".join(format)
+                )
+                embed = embed.set_author(
+                        name=ctx.author.display_name,
+                        icon_url=ctx.author.avatar_url
+                )
+
+                await ctx.send(embed=embed)
+        except AttributeError:
+            await ctx.send(query + " not found.")
 
 
     @nyaa.command(aliases=['search', 's'])
