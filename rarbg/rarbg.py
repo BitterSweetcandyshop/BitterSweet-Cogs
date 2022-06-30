@@ -7,6 +7,7 @@ import requests
 from time import sleep
 from bs4 import BeautifulSoup
 from redbot.core import commands, Config, checks
+from requests_futures.sessions import FuturesSession
 from redbot.core.utils.menus import DEFAULT_CONTROLS, menu
 
 
@@ -26,18 +27,13 @@ class rarbg(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.conf = Config.get_conf(self, identifier="UNIQUE_ID", force_registration=True)
-        self.conf.register_channel(rarbg_smartlink_enabled=False)
         self.conf.register_guild(rarbg_token="")
 
-    @commands.group(aliases=["r"])
-    @commands.guild_only()
-    async def rarbg(self, ctx):
-        """Search Rarbg"""
-
-    @rarbg.command(aliases=["quicksearch", "q", "qs", "quicklookup", "ql"])
+    @commands.group(aliases=["r", "rar"], invoke_without_command=True)
     @commands.cooldown(1, 3, commands.BucketType.user)
-    async def quick(self, ctx, *, query: str):
-        """Quicky search rarbg for torrents"""
+    @commands.guild_only()
+    async def rarbg(self, ctx, *, query:str):
+        """Search rarbg for torrents"""
         try:
             def format_bytes(size):
                 power = 2**10
@@ -67,40 +63,11 @@ class rarbg(commands.Cog):
                         icon_url=ctx.author.avatar_url
                 )
 
-                await ctx.send(content="", embed=embed)
+                await ctx.send(embed=embed)
             
         except AttributeError:
             await ctx.send(f"Sorry, no results for **{query}** or there was an error.")
-
-
-    @rarbg.command()
-    @checks.admin_or_permissions(manage_guild=True)
-    async def smartlink(self, ctx):
-        """
-        Smartlink for Rarbg makes it so whenever a link is sent in an enabled channel.
-        It will fetch data off rarbg about the torrent
-        _ _
-        Run the command in the channel you want enabled/disabled to toggle.
-        """
-
-        current_status = await self.conf.channel(ctx.channel).rarbg_smartlink_enabled()
         
-        await self.conf.channel(ctx.channel).rarbg_smartlink_enabled.set(not current_status)
-        await ctx.send("The channel **{}** now has smartlink as **{}**.".format(ctx.channel.name, not current_status))
-
-    @commands.Cog.listener()
-    async def on_message(self, message):
-        torrent_link = re.search(r'https?:\/\/(?:www\.)?nyaa\.\w{2}\/view\/\S+', message.content)
-        if not torrent_link: return
-        torrent_link = torrent_link.group()
-
-        smartlink_enabled = await self.conf.channel(message.channel).rarbg_smartlink_enabled()
-        if not smartlink_enabled: return
-
-        torrent = self.single_nyaa(torrent_link)
-        embed = await self.make_embed(torrent)
-
-        await message.channel.send(content="", embed=embed)
 
     async def rarbg_search(self, query, guild, **kwargs):
         """
