@@ -2,6 +2,7 @@ import re
 import json
 import discord
 import aiohttp
+import requests
 from bs4 import BeautifulSoup
 from redbot.core import commands, Config, checks
 from requests_futures.sessions import FuturesSession
@@ -24,40 +25,11 @@ class Nyaa(commands.Cog):
         self.bot = bot
         self.conf = Config.get_conf(self, identifier="UNIQUE_ID", force_registration=True)
         self.conf.register_channel(nyaa_smartlink_enabled=False)
+        self.conf.register_channel(anilink=False)
 
     async def red_delete_data_for_user(self, **kwargs):
         """Nothing to delete."""
         return
-
-    def search(self, keyword, **kwargs):
-        """
-         Return a list of dicts with the results of the query.
-        """
-        category = kwargs.get('category', 0)
-        subcategory = kwargs.get('subcategory', 0)
-        filters = kwargs.get('filters', 0)
-        page = kwargs.get('page', 0)
-        headers = {'User-Agent': 'Mozilla/5.0 (X11; Arch Linux; Linux x86_64; rv:66.0) Gecko/20100101 Firefox/66.0'}
-        session = FuturesSession()
-
-        if page > 0:
-            r = session.get(
-                "http://nyaa.si/?f={}&c={}_{}&q={}&p={}&o=desc&s=seeders".format(filters, category, subcategory,
-                                                                                 keyword, page), headers=headers)
-        else:
-            r = session.get(
-                "http://nyaa.si/?f={}&c={}_{}&q={}&o=desc&s=seeders".format(filters, category, subcategory,
-                                                                            keyword), headers=headers)
-
-        soup = BeautifulSoup(r.result().text, 'html.parser')
-        rows = soup.select('table tr')
-
-        results = {}
-
-        if rows:
-            results = uTils.parse_nyaa(rows, limit=11)
-
-        return results
 
     @commands.group(invoke_without_command=True)
     @commands.guild_only()
@@ -121,7 +93,7 @@ class Nyaa(commands.Cog):
     @checks.admin_or_permissions(manage_guild=True)
     async def smartlink(self, ctx):
         """
-        Smartlink for Nyaa makes it so whenever a link is sent in an enabled channel.
+        Smartlink for Nyaa makes it so whenever a link is sent in an enabled channel. \
         It will fetch data off nyaa about the torrent
         _ _
         Run the command in the channel you want enabled/disabled to toggle.
@@ -132,19 +104,70 @@ class Nyaa(commands.Cog):
         await self.conf.channel(ctx.channel).nyaa_smartlink_enabled.set(not current_status)
         await ctx.send("The channel **{}** now has smartlink as **{}**.".format(ctx.channel.name, not current_status))
 
+    @nyaa.command()
+    @checks.admin_or_permissions(manage_guild=True)
+    async def anilink(self, ctx):
+        """
+        Anilink for Nyaa makes it so whenever a AniList is sent in an enabled channel. \
+        It will fetch the first result from Nyaa about the anime
+        _ _
+        Run the command in the channel you want enabled/disabled to toggle.
+        """
+
+        current_status = await self.conf.channel(ctx.channel).anilink()
+        
+        await self.conf.channel(ctx.channel).anilink.set(not current_status)
+        await ctx.send("The channel **{}** now has anilink as **{}**.".format(ctx.channel.name, not current_status))
+
     @commands.Cog.listener()
     async def on_message(self, message):
+        # Nyaa
         torrent_link = re.search(r'https?:\/\/(?:www\.)?nyaa\.\w{2}\/view\/\S+', message.content)
-        if not torrent_link: return
-        torrent_link = torrent_link.group()
+        if torrent_link:
+            torrent_link = torrent_link.group()
 
-        smartlink_enabled = await self.conf.channel(message.channel).nyaa_smartlink_enabled()
-        if not smartlink_enabled: return
+            smartlink_enabled = await self.conf.channel(message.channel).nyaa_smartlink_enabled()
+            if not smartlink_enabled: return
 
-        torrent = self.single_nyaa(torrent_link)
-        embed = await self.make_embed(torrent)
+            torrent = self.single_nyaa(torrent_link)
+            embed = await self.make_embed(torrent)
 
-        await message.channel.send(content="", embed=embed)
+            return await message.channel.send(embed=embed)
+
+        #Ani List
+        anilink = re.search(r'https?:\/\/(?:www\.)?anilist\.co\/anime\/\S+', message.content)
+        if anilink:
+
+            anilink_enabled = await self.conf.channel(message.channel).anilink()
+            if not anilink_enabled: return
+
+            anilink = anilink.group()
+            print(anilink)
+            id = anilink.split("anime/")[1].split("/")[0]
+            anime = self.get_ani(int(id))
+            if anime.get('errors'):
+                return await message.add_reaction("❌")
+
+            nyaa_res = self.search(anime['data']['Media']['title']['romaji'], limit=1)
+            if len(nyaa_res) < 1: return await message.add_reaction("❌")
+            embed = await self.make_embed(nyaa_res[0])
+            
+            await message.channel.send(embed=embed)
+
+    def get_ani(self, id:int):
+        query = """
+query ($id: Int) {
+    Media (id: $id, type: ANIME) {
+        id
+        title {
+            romaji
+            english
+            native
+        }
+    }
+}
+"""
+        return requests.post('https://graphql.anilist.co', json={'query': query, 'variables': {'id': id}}).json()
 
 
     def single_nyaa(self, link:str):
@@ -158,6 +181,38 @@ class Nyaa(commands.Cog):
         footer = soup.select('[class="panel panel-danger"] [class="panel-footer clearfix"] a')
 
         return uTils.single_parse(header, target, footer, link)
+
+
+    def search(self, keyword, **kwargs):
+        """
+         Return a list of dicts with the results of the query.
+        """
+        category = kwargs.get('category', 0)
+        subcategory = kwargs.get('subcategory', 0)
+        filters = kwargs.get('filters', 0)
+        page = kwargs.get('page', 0)
+        limit = kwargs.get('page', 11)
+        headers = {'User-Agent': 'Mozilla/5.0 (X11; Arch Linux; Linux x86_64; rv:66.0) Gecko/20100101 Firefox/66.0'}
+        session = FuturesSession()
+
+        if page > 0:
+            r = session.get(
+                "http://nyaa.si/?f={}&c={}_{}&q={}&p={}&o=desc&s=seeders".format(filters, category, subcategory,
+                                                                                 keyword, page), headers=headers)
+        else:
+            r = session.get(
+                "http://nyaa.si/?f={}&c={}_{}&q={}&o=desc&s=seeders".format(filters, category, subcategory,
+                                                                            keyword), headers=headers)
+
+        soup = BeautifulSoup(r.result().text, 'html.parser')
+        rows = soup.select('table tr')
+
+        results = {}
+
+        if rows:
+            results = uTils.parse_nyaa(rows, limit)
+
+        return results
 
 
     async def make_embed(self, res, i:int=0, count:int=1):
