@@ -4,14 +4,13 @@ from requests_futures.sessions import FuturesSession
 class uTils:
     headers = {'User-Agent': 'Mozilla/5.0 (X11; Arch Linux; Linux x86_64; rv:66.0) Gecko/20100101 Firefox/66.0'}
 
-    def search(self, keyword, bans:list=[], **kwargs):
+    def search(self, keyword, bans:list=[], ignore_bans:bool=False, **kwargs):
         """
         Return a list of dicts with the results of the query.
         """
 
         speed = kwargs.get('speed', False)
         max = kwargs.get('max', 9)
-        ignore_bans = kwargs.get('ignore_bans', False)
 
         r = FuturesSession().get(
             f"http://1337x.to/search/{keyword}/1/",
@@ -33,15 +32,16 @@ class uTils:
 
             torrent = False
             if speed:
-                torrent = self.speedy_search(f"https://1337x.to{main_link}", bans=bans)
+                torrent = self.speedy_search(f"https://1337x.to{main_link}", bans=bans, ignore_bans=ignore_bans)
             else:
-                torrent = self.single_parse(f"https://1337x.to{main_link}", bans=bans)
+                torrent = self.single_parse(f"https://1337x.to{main_link}", bans=bans, ignore_bans=ignore_bans)
             if not torrent: continue
             torrents.append(torrent)
             
         return torrents
     
-    def speedy_search(self, main_link:str, bans:list=[]):
+    def speedy_search(self, main_link:str, bans:list=[], ignore_bans:bool=False):
+        if ignore_bans: bans=[]
         try:
             magR = FuturesSession().get(
                     main_link,
@@ -97,7 +97,8 @@ class uTils:
         except:
             return False
 
-    def single_parse(self, main_link:str):
+    def single_parse(self, main_link:str, bans:list=[], ignore_bans:bool=False):
+        if ignore_bans: bans=[]
         try:
             block = []
             stream = ''
@@ -123,6 +124,9 @@ class uTils:
                     for span in spans:
                         if not span.text: continue
                         block.append(span.text)
+
+            if any(ele in block[11].lower() for ele in bans):
+                return False
 
             # Image
             img = magnet_soup.select("main div div div div div div div img")

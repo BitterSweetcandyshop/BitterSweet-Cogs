@@ -21,10 +21,10 @@ async def shorten(self, magnet: str):
     res = json.loads(res)
     return res["shorturl"]
 
-async def make_embed(self, torrent_link, bans:list=[], ignore_bans:bool=True, page:int=1, count:int=1):
+async def make_embed(self, torrent_link, bans:list=[], ignore_bans:bool=False, page:int=1, count:int=1):
     try:
         print(f"Fetching: {torrent_link}")
-        torrent_info = uTils().single_parse(torrent_link)
+        torrent_info = uTils().single_parse(torrent_link, bans=bans, ignore_bans=ignore_bans)
 
         if not torrent_info.get("genres"):
             torrent_info["genres"] = ["Not Found"]
@@ -128,7 +128,7 @@ class ottsx(commands.Cog):
                 if len(result) < count:
                     count = len(result)
                 for i, res in enumerate(result[0:count:]):
-                    new_page = await make_embed(self, res["link"], (i+1), count)
+                    new_page = await make_embed(self, res["url"], page=(i+1), count=count)
                     pages.append(new_page)
 
             if len(pages) == 0:
@@ -220,7 +220,7 @@ Please choose from `games`, `music`,`software`,`tv`,`movies`, and `xxx`
     async def ban(self, ctx):
         """Mange banned phrases. All bans will be checked for in the uploader and torrent name
 
-The ban list ONLY applies to `quicksearch` and `search` commands."""
+The ban list ONLY applies to search commands."""
 
     @ban.command()
     async def add(self, ctx, *, target:str):
