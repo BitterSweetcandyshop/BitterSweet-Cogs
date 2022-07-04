@@ -2,8 +2,8 @@
   "author": ["Wyn", "BitterSweet#1337"],
   "install_msg": "Thank you for installing Nyaa Searcher. Type `[p]nyaa` for more information.",
   "name": "Nyaa Searcher",
-  "short": "Obtains torrent info",
-  "description": "Obtains torrent info from nyaa.si",
+  "short": "Obtains torrent info.",
+  "description": "Obtains torrent info from nyaa.si.",
   "disabled": false,
   "tags": [
     "nyaa"
