@@ -46,17 +46,17 @@ async def make_embed(self, torrent_link, bans:list=[], ignore_bans:bool=False, p
 **Genres:** {", ".join(torrent_info["genres"])}
 """
         )
-        emebed = embed.add_field(
+        embed = embed.add_field(
             name="Size",
             value=torrent_info["size"],
             inline=True
         )
-        emebed = embed.add_field(
+        embed = embed.add_field(
             name="Seeders",
             value=torrent_info["seeders"],
             inline=True
         )
-        emebed = embed.add_field(
+        embed = embed.add_field(
             name="Leechers",
             value=torrent_info["leechers"],
             inline=True
@@ -153,14 +153,14 @@ class ottsx(commands.Cog):
             while page_number < 10:
                 results = clientX.browse(category, page_number)
                 if (len(results["items"])) == 0:
-                    return await ctx.send("""That category does not seem to exsist.
+                    return await ctx.send("""That category does not seem to exist.
 Please choose from `games`, `music`,`software`,`tv`,`movies`, and `xxx`
                     """)
                 formatted_items = []
                 for item in results["items"]:
                     formatted_items.append(f"""[{item["name"]}]({item["link"]})
                     Uploaded by: {item["uploader"]} ({item["time"]})
-                    Seeders: {item["seeders"]} | Leachers: {item["leechers"]}
+                    Seeders: {item["seeders"]} | Leechers: {item["leechers"]}
                     """
                     )
                 cut_items_int = len(formatted_items)//2
@@ -217,7 +217,7 @@ Please choose from `games`, `music`,`software`,`tv`,`movies`, and `xxx`
     @commands.guild_only()
     @checks.admin_or_permissions(manage_guild=True)
     async def ban(self, ctx):
-        """Mange banned phrases. All bans will be checked for in the uploader and torrent name
+        """Manage banned phrases. All bans will be checked for in the uploader and torrent name.
 
 The ban list ONLY applies to search commands."""
 
@@ -233,19 +233,19 @@ The ban list ONLY applies to search commands."""
 
     @ban.command(aliases=['del', 'delete', 'rem'])
     async def remove(self, ctx, *, target:str):
-        """Remove a ban"""
+        """Remove a ban."""
         db_bans = await self.conf.guild(ctx.guild).bans()
         try:
             db_bans.remove(target.lower())
         except ValueError():
             return await ctx.send(f"{target} is not on the ban list.")
         await self.conf.guild(ctx.guild).bans.set(db_bans)
-        if not len(db_bans): return await ctx.send(f"Ban list is now empty")
+        if not len(db_bans): return await ctx.send(f"Ban list is now empty.")
         await ctx.send(f"Added {target} to the ban list.\nCurrent bans: {', '.join(db_bans)}")
 
     @ban.command()
     async def list(self, ctx):
-        """List all current bans"""
+        """List all current bans."""
         db_bans = await self.conf.guild(ctx.guild).bans()
-        if not len(db_bans): return await ctx.send(f"Ban list is empty")
+        if not len(db_bans): return await ctx.send(f"Ban list is empty.")
         await ctx.send(f"Current bans: {', '.join(db_bans)}")
