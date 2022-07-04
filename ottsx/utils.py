@@ -22,7 +22,6 @@ class uTils:
         torrents = []
         for i, a in enumerate(allas):
             if len(torrents) > max: break
-            #print(a)
             main_link = a.get('href')
             if not main_link: continue
             if not main_link.startswith('/torrent/'): continue
@@ -92,7 +91,6 @@ class uTils:
                     'leechers': leechers,
                     'uploader': uploader
             }
-            print(torrent)
             return torrent
         except:
             return False
@@ -163,9 +161,6 @@ class uTils:
                 if genre.text:
                     if len(genre.text):
                         extra_block['genres'].append(genre.text)
-
-            print(extra_block)
-            print("\n\n")
 
             if not len(block): return False
             torrent = {

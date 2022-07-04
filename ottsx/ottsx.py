@@ -23,7 +23,6 @@ async def shorten(self, magnet: str):
 
 async def make_embed(self, torrent_link, bans:list=[], ignore_bans:bool=False, page:int=1, count:int=1):
     try:
-        print(f"Fetching: {torrent_link}")
         torrent_info = uTils().single_parse(torrent_link, bans=bans, ignore_bans=ignore_bans)
 
         if not torrent_info.get("genres"):
