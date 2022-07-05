@@ -26,6 +26,7 @@ class Nyaa(commands.Cog):
         self.conf = Config.get_conf(self, identifier="UNIQUE_ID", force_registration=True)
         self.conf.register_channel(nyaa_smartlink_enabled=False)
         self.conf.register_channel(anilink=False)
+        self.conf.register_guild(bans=['yify'])
 
     async def red_delete_data_for_user(self, **kwargs):
         """Nothing to delete."""
@@ -37,7 +38,8 @@ class Nyaa(commands.Cog):
         """Search anime."""
         try:
             async with ctx.typing():
-                results = self.search(query)
+                bans = await self.conf.guild(ctx.guild).bans()
+                results = self.search(query, bans=bans)
                 count = len(results)
                 if not count: return await ctx.send(f"There was no results for `{query}`")
                 format=[]
@@ -72,7 +74,8 @@ class Nyaa(commands.Cog):
         """
         try:
             async with ctx.typing():
-                result = self.search(show_name)
+                bans = await self.conf.guild(ctx.guild).bans()
+                result = self.search(show_name, bans=bans, limit=10)
                 count = len(result)
                 if not count: return await ctx.send(f"There was no results for `{show_name}`")
                 pages = []
@@ -147,8 +150,10 @@ class Nyaa(commands.Cog):
             anime = self.get_ani(int(id))
             if anime.get('errors'):
                 return await message.add_reaction("❌")
+            
+            anime = anime['data']['Media']['title']
 
-            nyaa_res = self.search(anime['data']['Media']['title']['romaji'], limit=1)
+            nyaa_res = self.search((anime['romaji'] or anime['english']), limit=1)
             if len(nyaa_res) < 1: return await message.add_reaction("❌")
             embed = await self.make_embed(nyaa_res[0])
             
@@ -170,6 +175,46 @@ query ($id: Int) {
         return requests.post('https://graphql.anilist.co', json={'query': query, 'variables': {'id': id}}).json()
 
 
+    # Ban commands
+    @nyaa.group()
+    @commands.guild_only()
+    @checks.admin_or_permissions(manage_guild=True)
+    async def ban(self, ctx):
+        """Mange banned phrases. All bans will be checked for in the uploader and torrent name
+
+The ban list ONLY applies to search commands."""
+
+    @ban.command()
+    async def add(self, ctx, *, target:str):
+        """Add a ban"""
+        db_bans = await self.conf.guild(ctx.guild).bans()
+        if db_bans.count(target.lower()): return await ctx.send(f"{target} is already on the ban list.")
+        db_bans.append(target.lower())
+        await self.conf.guild(ctx.guild).bans.set(db_bans)
+        if not len(db_bans): return await ctx.send(f"Added {target} to the ban list.")
+        await ctx.send(f"Added {target} to the ban list.\nCurrent bans: {', '.join(db_bans)}")
+
+    @ban.command(aliases=['del', 'delete', 'rem'])
+    async def remove(self, ctx, *, target:str):
+        """Remove a ban"""
+        db_bans = await self.conf.guild(ctx.guild).bans()
+        try:
+            db_bans.remove(target.lower())
+        except:
+            return await ctx.send(f"{target} is not on the ban list.")
+        await self.conf.guild(ctx.guild).bans.set(db_bans)
+        if not len(db_bans): return await ctx.send(f"Ban list is now empty")
+        await ctx.send(f"Added {target} to the ban list.\nCurrent bans: {', '.join(db_bans)}")
+
+    @ban.command()
+    async def list(self, ctx):
+        """List all current bans"""
+        db_bans = await self.conf.guild(ctx.guild).bans()
+        if not len(db_bans): return await ctx.send(f"Ban list is empty")
+        await ctx.send(f"Current bans: {', '.join(db_bans)}")
+
+
+
     def single_nyaa(self, link:str):
         headers = {'User-Agent': 'Mozilla/5.0 (X11; Arch Linux; Linux x86_64; rv:66.0) Gecko/20100101 Firefox/66.0'}
         session = FuturesSession()
@@ -187,11 +232,12 @@ query ($id: Int) {
         """
          Return a list of dicts with the results of the query.
         """
+        bans = kwargs.get('bans', [])
         category = kwargs.get('category', 0)
         subcategory = kwargs.get('subcategory', 0)
         filters = kwargs.get('filters', 0)
         page = kwargs.get('page', 0)
-        limit = kwargs.get('page', 11)
+        limit = kwargs.get('limit', 11)
         headers = {'User-Agent': 'Mozilla/5.0 (X11; Arch Linux; Linux x86_64; rv:66.0) Gecko/20100101 Firefox/66.0'}
         session = FuturesSession()
 
@@ -210,7 +256,7 @@ query ($id: Int) {
         results = {}
 
         if rows:
-            results = uTils.parse_nyaa(rows, limit)
+            results = uTils.parse_nyaa(rows, limit, bans)
 
         return results
 

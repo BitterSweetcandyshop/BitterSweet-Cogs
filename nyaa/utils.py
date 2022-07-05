@@ -56,7 +56,7 @@ class Utils:
         return torrent
 
 
-    def parse_nyaa(table_rows, limit):
+    def parse_nyaa(table_rows, limit, bans:list=[]):
 
         torrents = []
 
@@ -73,6 +73,12 @@ class Utils:
 
                 if td.text.rstrip():
                     block.append(td.text.rstrip())
+            
+            if len(block) < 9: continue
+
+            if bans:
+                if any(ele in block[2].lower() for ele in bans): continue
+
             try:
                 torrent = {
                     'category': Utils.nyaa_categories(block[0]),
