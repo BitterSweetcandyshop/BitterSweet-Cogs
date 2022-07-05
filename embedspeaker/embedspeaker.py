@@ -14,9 +14,9 @@ class EmbedSpeaker(commands.Cog):
     @commands.guild_only()
     async def embedspeaker(self, ctx):
         """
-        Converets sent messages into embeds.
+        Converts sent messages into embeds.
 
-        Specify a channel (by mention), if none is specified it will assume the channel where the command was typed.
+        Specify a channel (by mention), if none are specified it will assume the channel where the command was typed.
         """
         pass
 
@@ -34,7 +34,7 @@ class EmbedSpeaker(commands.Cog):
         if len(current_channels) > 0:
             for saved_channel in current_channels:
                 if saved_channel["id"] == channel_specified["id"]:
-                    await ctx.send("Channel **{}** is already a embedspeaker channel.".format(channel_specified["name"]))
+                    await ctx.send("Channel **{}** is already an embedspeaker channel.".format(channel_specified["name"]))
                     return
             
         current_channels.append(channel_specified)

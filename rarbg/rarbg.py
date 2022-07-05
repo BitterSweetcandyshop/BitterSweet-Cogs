@@ -21,7 +21,7 @@ async def shorten(self, magnet: str):
 
 class rarbg(commands.Cog):
     """
-    Search Rarbg.
+    Search RARBG.
     """
 
     def __init__(self, bot):
@@ -33,7 +33,7 @@ class rarbg(commands.Cog):
     @commands.cooldown(1, 3, commands.BucketType.user)
     @commands.guild_only()
     async def rarbg(self, ctx, *, query:str):
-        """Search rarbg for torrents"""
+        """Search RARBG for torrents"""
         try:
             def format_bytes(size):
                 power = 2**10

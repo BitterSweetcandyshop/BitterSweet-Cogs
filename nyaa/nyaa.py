@@ -19,7 +19,7 @@ async def shorten(self, magnet: str):
     return res["shorturl"]
 
 class Nyaa(commands.Cog):
-    """Obtain torrents from nyaa."""
+    """Obtain torrents from nyaa.si."""
 
     def __init__(self, bot):
         self.bot = bot
@@ -57,7 +57,7 @@ class Nyaa(commands.Cog):
 
                 await ctx.send(embed=embed)
         except AttributeError:
-            await ctx.send(query + " not found.")
+            await ctx.send(query + " Not found.")
 
 
     @nyaa.command(aliases=['search', 's'])
@@ -65,7 +65,7 @@ class Nyaa(commands.Cog):
     @commands.bot_has_permissions(embed_links=True, add_reactions=True)
     async def lookup(self, ctx, *, show_name: str):
         """
-        Returns torrents from search.
+        Return torrents from search.
         User arguments - Search query to send for results.
 
         Example: [p]nyaa lookup tokyo ghoul
@@ -84,7 +84,7 @@ class Nyaa(commands.Cog):
 
                 await menu(ctx, pages, DEFAULT_CONTROLS)
         except AttributeError:
-            await ctx.send(show_name + " not found.")
+            await ctx.send(show_name + " Not found.")
 
 
 
@@ -94,7 +94,7 @@ class Nyaa(commands.Cog):
     async def smartlink(self, ctx):
         """
         Smartlink for Nyaa makes it so whenever a link is sent in an enabled channel. \
-        It will fetch data off nyaa about the torrent
+        It will fetch data off nyaa about the torrent.
         _ _
         Run the command in the channel you want enabled/disabled to toggle.
         """
@@ -109,7 +109,7 @@ class Nyaa(commands.Cog):
     async def anilink(self, ctx):
         """
         Anilink for Nyaa makes it so whenever a AniList is sent in an enabled channel. \
-        It will fetch the first result from Nyaa about the anime
+        It will fetch the first result from Nyaa about the anime.
         _ _
         Run the command in the channel you want enabled/disabled to toggle.
         """
