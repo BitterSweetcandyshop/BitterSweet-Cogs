@@ -1,25 +1,52 @@
+import requests
+from bs4 import BeautifulSoup
+from requests_futures.sessions import FuturesSession
+
 """
     Module utils
 """
 
 class Utils:
 
-    def nyaa_categories(b):
-        category_name = ""
-        c = b.replace('/?c=', '')
-        cats = c.split('_')
 
-        cat = cats[0]
-        subcat = cats[1]
+    def search(self, keyword, limit:int=11, bans:list=[], **kwargs):
+        """Search nyaa by scraping the restuls
+         Return a list of dicts with the results of the query.
+        """
+        category = kwargs.get('category', 0)
+        subcategory = kwargs.get('subcategory', 0)
+        filters = kwargs.get('filters', 0)
+        page = kwargs.get('page', 0)
+        sort = kwargs.get('sort', 'seeders')
+        if sort: sort = "&o=desc&s=" + sort
+        headers = {'User-Agent': 'Mozilla/5.0 (X11; Arch Linux; Linux x86_64; rv:66.0) Gecko/20100101 Firefox/66.0'}
+        session = FuturesSession()
 
-        try:
-            category_name = "{} - {}".format(Utils.categories[cat]['name'], Utils.categories[cat]['subcats'][subcat])
-        except:
-            pass
 
-        return category_name
 
-    def single_parse(header, target, footer, link):
+        r = session.get(f"http://nyaa.si/?f={filters}&c={category}_{subcategory}&q={keyword}{sort}", headers=headers)
+
+        soup = BeautifulSoup(r.result().text, 'html.parser')
+        rows = soup.select('table tr')
+        results = {}
+        if rows:
+            results = self.parse_nyaa(rows, limit, bans)
+            return results
+        else: return []
+
+    def single_parse(self, link:str, **kwargs):
+        """Get information from a nyaa link"""
+        kwargs.get('sort', 'seeders')
+        headers = {'User-Agent': 'Mozilla/5.0 (X11; Arch Linux; Linux x86_64; rv:66.0) Gecko/20100101 Firefox/66.0'}
+        session = FuturesSession()
+
+        r = session.get(link, headers=headers)
+        soup = BeautifulSoup(r.result().text, 'html.parser')
+        target = soup.select('body div div div [class="row"]')
+        header = soup.select('[class="panel-title"]')
+        footer = soup.select('[class="panel panel-danger"] [class="panel-footer clearfix"] a')
+
+
         block = []
         for row in target:
             if row.select('[class="col-md-5"]'):
@@ -56,8 +83,8 @@ class Utils:
         return torrent
 
 
-    def parse_nyaa(table_rows, limit, bans:list=[]):
-
+    def parse_nyaa(self, table_rows, limit:int=11, bans=[]):
+        """Parse the search table from nyaa"""
         torrents = []
 
         for row in table_rows[:limit]:
@@ -102,6 +129,23 @@ class Utils:
 
         return torrents
 
+
+    def get_ani(self, id:int):
+        query = """
+query ($id: Int) {
+    Media (id: $id, type: ANIME) {
+        id
+        title {
+            romaji
+            english
+            native
+        }
+    }
+}
+"""
+        return requests.post('https://graphql.anilist.co', json={'query': query, 'variables': {'id': id}}).json()
+
+
     async def get_code(search:str):
         code = ""
         for outer in uTils.categories.keys():
@@ -109,6 +153,21 @@ class Utils:
             for inner in uTils.categories[outer]['subcats'].keys():
                 if not search.lower().__contains__(uTils.categories[outer]['subcats'][inner].lower()): continue
                 return [outer, inner]
+
+    def nyaa_categories(b):
+        category_name = ""
+        c = b.replace('/?c=', '')
+        cats = c.split('_')
+
+        cat = cats[0]
+        subcat = cats[1]
+
+        try:
+            category_name = "{} - {}".format(Utils.categories[cat]['name'], Utils.categories[cat]['subcats'][subcat])
+        except:
+            pass
+
+        return category_name
         
 
     categories = {

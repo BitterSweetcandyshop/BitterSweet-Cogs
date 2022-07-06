@@ -21,57 +21,6 @@ async def shorten(self, magnet: str):
     res = json.loads(res)
     return res["shorturl"]
 
-async def make_embed(self, torrent_link, bans:list=[], ignore_bans:bool=False, page:int=1, count:int=1):
-    try:
-        torrent_info = uTils().single_parse(torrent_link, bans=bans, ignore_bans=ignore_bans)
-
-        if not torrent_info.get("genres"):
-            torrent_info["genres"] = ["Not Found"]
-        
-        stream = 'N/A'
-        if torrent_info['stream']:
-            stream = f" - [Stream]({torrent_info['stream']})"
-
-        short_magnet = await shorten(self, torrent_info["magnet"])
-
-        embed = discord.Embed(
-            title=torrent_info["shortName"],
-            description=f"""*[{torrent_info['name']}]({torrent_link})*
-
-{torrent_info['description']}
-
-**Download:** *[Magnet]({short_magnet}) - [Torrent]({torrent_info['torrent']}){stream}*
-**Uploaded by:** [{torrent_info['uploader']}]({torrent_info['uploaderUrl']}) *({torrent_info['date']})*
-**Type:** *{torrent_info['language']}, {torrent_info['category']} - {torrent_info['type']}*
-**Genres:** {", ".join(torrent_info["genres"])}
-"""
-        )
-        embed = embed.add_field(
-            name="Size",
-            value=torrent_info["size"],
-            inline=True
-        )
-        embed = embed.add_field(
-            name="Seeders",
-            value=torrent_info["seeders"],
-            inline=True
-        )
-        embed = embed.add_field(
-            name="Leechers",
-            value=torrent_info["leechers"],
-            inline=True
-        )
-        embed = embed.set_footer(
-            text=f"page: ({str(page)}/{str(count)})"
-        )
-
-        if torrent_info.get("thumbnail"):
-            embed = embed.set_thumbnail(
-                url=torrent_info["thumbnail"]
-            )
-        return embed
-    except AttributeError():
-        pass
 
 class ottsx(commands.Cog):
     """
@@ -108,7 +57,7 @@ class ottsx(commands.Cog):
                         icon_url=ctx.author.avatar_url
                 )
 
-                await ctx.send(content="", embed=embed)
+                await ctx.send(embed=embed)
             
         except AttributeError:
             await ctx.send(f"Sorry, no results for **{query}** or there was an error.")
@@ -138,47 +87,6 @@ class ottsx(commands.Cog):
 
         except AttributeError:
             await ctx.send(f"Sorry, no results for **{query}** or there was an error.")
-
-    #Possibly the dumbest command I hate it
-    @ottsx.command()
-    @commands.cooldown(1, 3, commands.BucketType.user)
-    async def browse(self, ctx, category:str = "movies"):
-        """Go through torrents on a main category page."""
-        clientX = py1337x(proxy='1337x.to')
-
-        # get about 200 results and put it all into an array 
-        item_full_list = []
-        page_number = 1
-        async with ctx.typing():
-            while page_number < 10:
-                results = clientX.browse(category, page_number)
-                if (len(results["items"])) == 0:
-                    return await ctx.send("""That category does not seem to exist.
-Please choose from `games`, `music`,`software`,`tv`,`movies`, and `xxx`
-                    """)
-                formatted_items = []
-                for item in results["items"]:
-                    formatted_items.append(f"""[{item["name"]}]({item["link"]})
-                    Uploaded by: {item["uploader"]} ({item["time"]})
-                    Seeders: {item["seeders"]} | Leechers: {item["leechers"]}
-                    """
-                    )
-                cut_items_int = len(formatted_items)//2
-                item_full_list.append(formatted_items[:cut_items_int])
-                item_full_list.append(formatted_items[cut_items_int:])
-                page_number += 1
-
-            pages = []
-            for i, item_list in enumerate(item_full_list):
-                embed = discord.Embed(
-                    title="Browsing 1337x",
-                    description="\n".join(item_list) + f"\npage: {i+1}/{len(item_full_list)}"
-                    
-                )
-                pages.append(embed)
-
-        await menu(ctx, pages, DEFAULT_CONTROLS)
-
 
     @ottsx.command()
     @commands.guild_only()
@@ -249,3 +157,57 @@ The ban list ONLY applies to search commands."""
         db_bans = await self.conf.guild(ctx.guild).bans()
         if not len(db_bans): return await ctx.send(f"Ban list is empty.")
         await ctx.send(f"Current bans: {', '.join(db_bans)}")
+
+
+#ugly fucking function to make embeds
+async def make_embed(self, torrent_link, bans:list=[], ignore_bans:bool=False, page:int=1, count:int=1):
+    try:
+        torrent_info = uTils().single_parse(torrent_link, bans=bans, ignore_bans=ignore_bans)
+
+        if not torrent_info.get("genres"):
+            torrent_info["genres"] = ["Not Found"]
+        
+        stream = 'N/A'
+        if torrent_info['stream']:
+            stream = f" - [Stream]({torrent_info['stream']})"
+
+        short_magnet = await shorten(self, torrent_info["magnet"])
+
+        embed = discord.Embed(
+            title=torrent_info["shortName"],
+            description=f"""*[{torrent_info['name']}]({torrent_link})*
+
+{torrent_info['description']}
+
+**Download:** *[Magnet]({short_magnet}) - [Torrent]({torrent_info['torrent']}){stream}*
+**Uploaded by:** [{torrent_info['uploader']}]({torrent_info['uploaderUrl']}) *({torrent_info['date']})*
+**Type:** *{torrent_info['language']}, {torrent_info['category']} - {torrent_info['type']}*
+**Genres:** {", ".join(torrent_info["genres"])}
+""")
+
+        embed = embed.add_field(
+            name="Size",
+            value=torrent_info["size"],
+            inline=True
+        )
+        embed = embed.add_field(
+            name="Seeders",
+            value=torrent_info["seeders"],
+            inline=True
+        )
+        embed = embed.add_field(
+            name="Leechers",
+            value=torrent_info["leechers"],
+            inline=True
+        )
+        embed = embed.set_footer(
+            text=f"page: ({str(page)}/{str(count)})"
+        )
+
+        if torrent_info.get("thumbnail"):
+            embed = embed.set_thumbnail(
+                url=torrent_info["thumbnail"]
+            )
+        return embed
+    except AttributeError():
+        pass

@@ -2,10 +2,7 @@ import re
 import json
 import discord
 import aiohttp
-import requests
-from bs4 import BeautifulSoup
 from redbot.core import commands, Config, checks
-from requests_futures.sessions import FuturesSession
 from redbot.core.utils.menus import DEFAULT_CONTROLS, menu
 from nyaa.utils import Utils as uTils
 
@@ -39,7 +36,8 @@ class Nyaa(commands.Cog):
         try:
             async with ctx.typing():
                 bans = await self.conf.guild(ctx.guild).bans()
-                results = self.search(query, bans=bans)
+                results = uTils().search(query, 11, bans)
+                print(results)
                 count = len(results)
                 if not count: return await ctx.send(f"There was no results for `{query}`")
                 format=[]
@@ -57,7 +55,7 @@ class Nyaa(commands.Cog):
                         icon_url=ctx.author.avatar_url
                 )
 
-                await ctx.send(embed=embed)
+            await ctx.send(embed=embed)
         except AttributeError:
             await ctx.send(query + " Not found.")
 
@@ -75,23 +73,23 @@ class Nyaa(commands.Cog):
         try:
             async with ctx.typing():
                 bans = await self.conf.guild(ctx.guild).bans()
-                result = self.search(show_name, bans=bans, limit=10)
+                result = uTils().search(show_name, 11, bans)
                 count = len(result)
                 if not count: return await ctx.send(f"There was no results for `{show_name}`")
                 pages = []
 
                 #if not result: return await ctx.send(f"There was no results for `{show_name}`")
-                for res in result[0:count:]:
-                    page = await self.make_embed(res, 1, count)
+                for i, res in enumerate(result):
+                    page = await self.make_embed(res, i, count)
                     pages.append(page)
 
-                await menu(ctx, pages, DEFAULT_CONTROLS)
+            await menu(ctx, pages, DEFAULT_CONTROLS)
         except AttributeError:
             await ctx.send(show_name + " Not found.")
 
 
 
-
+    # Smartlink and Anilink
     @nyaa.command()
     @checks.admin_or_permissions(manage_guild=True)
     async def smartlink(self, ctx):
@@ -101,9 +99,7 @@ class Nyaa(commands.Cog):
         _ _
         Run the command in the channel you want enabled/disabled to toggle.
         """
-
         current_status = await self.conf.channel(ctx.channel).nyaa_smartlink_enabled()
-        
         await self.conf.channel(ctx.channel).nyaa_smartlink_enabled.set(not current_status)
         await ctx.send("The channel **{}** now has smartlink as **{}**.".format(ctx.channel.name, not current_status))
 
@@ -116,11 +112,11 @@ class Nyaa(commands.Cog):
         _ _
         Run the command in the channel you want enabled/disabled to toggle.
         """
-
         current_status = await self.conf.channel(ctx.channel).anilink()
-        
         await self.conf.channel(ctx.channel).anilink.set(not current_status)
         await ctx.send("The channel **{}** now has anilink as **{}**.".format(ctx.channel.name, not current_status))
+
+
 
     @commands.Cog.listener()
     async def on_message(self, message):
@@ -132,7 +128,7 @@ class Nyaa(commands.Cog):
             smartlink_enabled = await self.conf.channel(message.channel).nyaa_smartlink_enabled()
             if not smartlink_enabled: return
 
-            torrent = self.single_nyaa(torrent_link)
+            torrent = uTils().single_parse(torrent_link)
             embed = await self.make_embed(torrent)
 
             return await message.channel.send(embed=embed)
@@ -147,32 +143,17 @@ class Nyaa(commands.Cog):
             anilink = anilink.group()
             print(anilink)
             id = anilink.split("anime/")[1].split("/")[0]
-            anime = self.get_ani(int(id))
+            anime = uTils().get_ani(int(id))
             if anime.get('errors'):
                 return await message.add_reaction("❌")
             
             anime = anime['data']['Media']['title']
 
-            nyaa_res = self.search((anime['romaji'] or anime['english']), limit=1)
+            nyaa_res = uTils().search((anime['romaji'] or anime['english']), 2, [], sort='', category='1')
             if len(nyaa_res) < 1: return await message.add_reaction("❌")
             embed = await self.make_embed(nyaa_res[0])
             
             await message.channel.send(embed=embed)
-
-    def get_ani(self, id:int):
-        query = """
-query ($id: Int) {
-    Media (id: $id, type: ANIME) {
-        id
-        title {
-            romaji
-            english
-            native
-        }
-    }
-}
-"""
-        return requests.post('https://graphql.anilist.co', json={'query': query, 'variables': {'id': id}}).json()
 
 
     # Ban commands
@@ -214,51 +195,6 @@ The ban list ONLY applies to search commands."""
         await ctx.send(f"Current bans: {', '.join(db_bans)}")
 
 
-
-    def single_nyaa(self, link:str):
-        headers = {'User-Agent': 'Mozilla/5.0 (X11; Arch Linux; Linux x86_64; rv:66.0) Gecko/20100101 Firefox/66.0'}
-        session = FuturesSession()
-
-        r = session.get(link, headers=headers)
-        soup = BeautifulSoup(r.result().text, 'html.parser')
-        target = soup.select('body div div div [class="row"]')
-        header = soup.select('[class="panel-title"]')
-        footer = soup.select('[class="panel panel-danger"] [class="panel-footer clearfix"] a')
-
-        return uTils.single_parse(header, target, footer, link)
-
-
-    def search(self, keyword, **kwargs):
-        """
-         Return a list of dicts with the results of the query.
-        """
-        bans = kwargs.get('bans', [])
-        category = kwargs.get('category', 0)
-        subcategory = kwargs.get('subcategory', 0)
-        filters = kwargs.get('filters', 0)
-        page = kwargs.get('page', 0)
-        limit = kwargs.get('limit', 11)
-        headers = {'User-Agent': 'Mozilla/5.0 (X11; Arch Linux; Linux x86_64; rv:66.0) Gecko/20100101 Firefox/66.0'}
-        session = FuturesSession()
-
-        if page > 0:
-            r = session.get(
-                "http://nyaa.si/?f={}&c={}_{}&q={}&p={}&o=desc&s=seeders".format(filters, category, subcategory,
-                                                                                 keyword, page), headers=headers)
-        else:
-            r = session.get(
-                "http://nyaa.si/?f={}&c={}_{}&q={}&o=desc&s=seeders".format(filters, category, subcategory,
-                                                                            keyword), headers=headers)
-
-        soup = BeautifulSoup(r.result().text, 'html.parser')
-        rows = soup.select('table tr')
-
-        results = {}
-
-        if rows:
-            results = uTils.parse_nyaa(rows, limit, bans)
-
-        return results
 
 
     async def make_embed(self, res, i:int=0, count:int=1):
