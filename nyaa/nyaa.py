@@ -37,7 +37,6 @@ class Nyaa(commands.Cog):
             async with ctx.typing():
                 bans = await self.conf.guild(ctx.guild).bans()
                 results = uTils().search(query, 11, bans)
-                print(results)
                 count = len(results)
                 if not count: return await ctx.send(f"There was no results for `{query}`")
                 format=[]
