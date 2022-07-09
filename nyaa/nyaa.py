@@ -140,7 +140,6 @@ class Nyaa(commands.Cog):
             if not anilink_enabled: return
 
             anilink = anilink.group()
-            print(anilink)
             id = anilink.split("anime/")[1].split("/")[0]
             anime = uTils().get_ani(int(id))
             if anime.get('errors'):
@@ -150,6 +149,7 @@ class Nyaa(commands.Cog):
 
             nyaa_res = uTils().search((anime['romaji'] or anime['english']), 2, [], sort='', category='1')
             if len(nyaa_res) < 1: return await message.add_reaction("❌")
+            await message.add_reaction("✔")
             embed = await self.make_embed(nyaa_res[0])
             
             await message.channel.send(embed=embed)
