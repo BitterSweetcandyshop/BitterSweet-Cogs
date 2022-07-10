@@ -105,7 +105,7 @@ class uTils:
             return False
 
     def single_parse(self, main_link:str, bans:list=[], ignore_bans:bool=False, allow_nsfw:bool=False):
-        #try:
+        try:
             if ignore_bans: bans=[]
             torrent = {
                 'url': main_link,
@@ -197,5 +197,5 @@ class uTils:
                 torrent['thumbnail'] = "https:" + image.get('src') or ''
 
             return torrent
-        #except:
-        #    return False
+        except:
+            return False
