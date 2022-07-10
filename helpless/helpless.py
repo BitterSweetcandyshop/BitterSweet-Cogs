@@ -43,19 +43,23 @@ class Helpless(commands.Cog):
     async def help(self, ctx, **kwargs):
         embed = discord.Embed(
             description="""**Torrenting**:
-    - `ottsx` 1337x based commands.
-    - `nyaa` Nyaa based commands.
-    - `rarbg` Rarbg based commands.
+    Search through some popular trackers:
+    - `1337x`
+    - `nyaa` 
+    - `rarbg`
 **Misc**:
+    Need help or want to know some stats?
     - `contact` Reach out to BitterSweet#1337.
+    - `help` Shows this embed.
     - `invite` Invite Quinque to your own sevrer. 
     - `uptime` Total time Quinque has been online.
     - `set` Other tools for server settings.
+    - `info` More information about the bot.
 **AniList**:
     - `anime` Searches for an anime using Anilist.
     - `character` Searches for an anime character using Anilist.
     - `manga` Searches for a manga using Anilist.
-    -  `user` Searches for a user on Anilist.
+    - `user` Searches for a user on Anilist.
             """
         )
         embed = embed.set_author(
@@ -88,12 +92,18 @@ in one place. More importantly though I'm using this project to learn about pars
     This bot is actually an instance of [RedBot](https://github.com/Cog-Creators/Red-DiscordBot) So instead of a full source,
     You can settup a redbot instance, and load up [my cogs](https://github.com/bittersweetcandyshop/BitterSweet-Cogs).
 
+**Art**
+    - Pfp done by ju ju bee#4839
+
 **Outside Commands**
-    AniList: [Wyn](https://github.com/TheWyn/Wyn-RedV3Cogs)
-    Valued Feedback: DieDoesMC#0945, Bulldög#0533, kekko#1337
+    AniList: [Wyn's Cogs](https://github.com/TheWyn/Wyn-RedV3Cogs), Also helped to get started on Nyaa.
+    Valued Feedback:
+    - [DieDoesMC#0945](https://discord.gg/8WCZGZ5Ucr)
+    - Bulldög#0533
+    - champagne.sunshine#0968
 
 **Contact**
-    Discord: [BitterSweet#1337](https://discord.gg/nKdNFzHW)
+    Discord: [BitterSweet#1337](https://discord.gg/ChS8MZDPRA)
     Reddit: [u/BitterSweetcandyshop](https://www.reddit.com/user/BitterSweetcandyshop)
     Revolt: @BitterSweet
     Matrix: bittersweetcandyshop
@@ -104,7 +114,7 @@ in one place. More importantly though I'm using this project to learn about pars
             icon_url=ctx.author.avatar_url
         )
         embed = embed.set_footer(
-            text="Stay crazy, keep seeding.",
+            text="Just Keep Laughing, and keep seeding.",
             icon_url="https://cdn.discordapp.com/avatars/932434610233684068/5c7750171fc026c9ad151b21add11b6f.png?size=4096"
         )
         await ctx.send(embed=embed)
