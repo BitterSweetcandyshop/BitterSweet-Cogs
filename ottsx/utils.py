@@ -34,17 +34,16 @@ class uTils:
             if not main_link: continue
             if not main_link.startswith('/torrent/'): continue
             if not ignore_bans:
-                if any(ele in main_link.lower() for ele in bans): continue
-                bans=[]
+                if any(main_link.lower().__contains__(ele) for ele in bans): continue
+            else: bans = []
 
             torrent = False
             if speed:
                 torrent = self.speedy_search(f"https://1337x.to{main_link}", bans=bans, ignore_bans=ignore_bans, allow_nsfw=allow_nsfw)
             else:
                 torrent = self.single_parse(f"https://1337x.to{main_link}", bans=bans, ignore_bans=ignore_bans, allow_nsfw=allow_nsfw)
-            if not torrent: continue
-            torrents.append(torrent)
-            
+            if torrent: torrents.append(torrent)
+
         return torrents
     
     def speedy_search(self, main_link:str, bans:list=[], ignore_bans:bool=False, allow_nsfw:bool=False):
@@ -81,15 +80,13 @@ class uTils:
                 if ("xxx" in text_data.lower()) and not allow_nsfw: return False # no nsfw?
                 if not (text_data.startswith(" Seeders") or text_data.startswith(" Leechers") or text_data.startswith(" Uploaded By  ") or text_data.startswith(" Total size")): continue
                 elif text_data.startswith(" Uploaded By  "):
-                    if any(ele in text_data.split(" ")[-2] for ele in bans): return False # banned uploader?
+                    if any(text_data.split(" ")[-2].lower().__contains__(ele) for ele in bans): return False # banned uploader?
                 elif text_data.startswith(" Seeders"):
                     seeders = text_data.split(" ")[-2]
                 elif text_data.startswith(" Leechers"):
                     leechers = text_data.split(" ")[-2]
                 elif text_data.startswith(" Total size"):
                     size = text_data.split(" ")[-3] + " " + text_data.split(" ")[-2]
-
-            if any(ele in uploader.lower() for ele in bans): return False
 
             torrent = {
                     'magnet': magnet,
