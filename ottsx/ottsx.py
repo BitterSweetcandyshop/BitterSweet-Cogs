@@ -74,7 +74,6 @@ class ottsx(commands.Cog):
             async with ctx.typing():
                 bans = await self.conf.guild(ctx.guild).bans()
                 allow_nsfw = await solve_nfilter(self, ctx)
-                print(allow_nsfw)
                 result = uTils().search(query, bans, allow_nsfw=allow_nsfw)
                 if len(result) < count:
                     count = len(result)
@@ -129,7 +128,7 @@ class ottsx(commands.Cog):
 
 
 
-    @ottsx.group()
+    @ottsx.group(aliases=['sets'])
     @commands.guild_only()
     @checks.admin_or_permissions(manage_guild=True)
     async def settings(self, ctx):
@@ -192,7 +191,7 @@ class ottsx(commands.Cog):
         await self.conf.channel(ctx.channel).smartlink_enabled.set(not current_status)
         await ctx.send("The channel **{}** now has smartlink as **{}**.".format(ctx.channel.name, not current_status))
 
-    @settings.command()
+    @settings.command(aliases=['nsfwfilter'])
     @commands.guild_only()
     @checks.admin_or_permissions(manage_guild=True)
     async def nfilter(self, ctx, nfilter_level:int):
