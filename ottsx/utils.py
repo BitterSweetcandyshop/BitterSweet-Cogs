@@ -14,16 +14,24 @@ class uTils:
         max = kwargs.get('max', 9)
         allow_nsfw = kwargs.get('allow_nsfw', False)
         category = kwargs.get('category', '')
+        filter = kwargs.get('filter', '')
 
+        # So by using '' as default value, nothing will be printed, but if there
+        #is a value, format it to fit in the search url correctly
         torrents = []
         base = 'search'
-        if category:
+        if (category) and (not filter):
             category = f'/{category}'
             base = 'category-search'
+        elif category and filter:
+            category = f'/{category}'
+            filter = f'/{filter}'
+            base = 'sort-category-search'
+        elif(not category) and (filter):
+            filter = f'/{filter}'
+            base = 'sort-search'
 
-        r = FuturesSession().get(
-            f"http://1337x.to/{base}/{keyword}{category}/1/",
-            headers=self.headers)
+        r = FuturesSession().get(f"http://1337x.to/{base}/{keyword}{category}{filter}/1/",headers=self.headers)
 
         soup = BeautifulSoup(r.result().text, 'html.parser')
         allas = soup.select('table tr a')
@@ -72,12 +80,15 @@ class uTils:
             seeders = ''
             leechers = ''
             size = ''
+            risk = False
             for sl in sl_elm:
                 if seeders and leechers and size: break
                 text_data = sl.get_text()
                 if not text_data: continue
                 if not text_data.startswith(" "): continue
                 if ("xxx" in text_data.lower()) and not allow_nsfw: return False # no nsfw?
+                if ("category" in text_data.lower()): # check risk
+                    if ("games" in text_data.lower()) or ("software" in text_data.lower()): risk = True
                 if not (text_data.startswith(" Seeders") or text_data.startswith(" Leechers") or text_data.startswith(" Uploaded By  ") or text_data.startswith(" Total size")): continue
                 elif text_data.startswith(" Uploaded By  "):
                     if any(text_data.split(" ")[-2].lower().__contains__(ele) for ele in bans): return False # banned uploader?
@@ -96,6 +107,7 @@ class uTils:
                     'total_size': size,
                     'seeders': seeders,
                     'leechers': leechers,
+                    'risk': risk
             }
             return torrent
         except:
@@ -126,7 +138,8 @@ class uTils:
                 'short_title_url': '',
                 'description': '',
                 'thumbnail': '',
-                'nsfw': ''
+                'nsfw': False,
+                'risk': False
             }
 
             magR = FuturesSession().get(main_link, headers=self.headers)
@@ -146,7 +159,10 @@ class uTils:
                 if torrent['category']:
                     if torrent['category'] == "XXX":
                         if not allow_nsfw: return False
-                        torrent['nsfw'] = "nsfw"
+                        torrent['nsfw'] = True
+                    if torrent['category'].lower() == "games" or torrent['category'].lower() == "software":
+                        if not allow_nsfw: return False
+                        torrent['risk'] = True
 
                 if torrent.get('leechers'): break
                 text_data = sl.get_text()

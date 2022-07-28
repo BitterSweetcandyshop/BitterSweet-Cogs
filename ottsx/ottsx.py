@@ -39,11 +39,21 @@ class ottsx(commands.Cog):
     @commands.group(aliases=["1337x"], invoke_without_command=True)
     @commands.guild_only()
     async def ottsx(self, ctx, *, query:str):
-        """Search 1337x.to."""
+        """Search 1337x.to.
+        Flags: `seeders`, `leecehers`, `time`, and `size`
+        """
         try:
             async with ctx.typing():
+
+                filter = ''
+                if query.__contains__('--'):
+                    flagged = flagging(self, query)
+                    if flagged['flags']: 
+                        query = flagged['line']
+                        filter = flagged['flags'][0]
+
                 bans = await self.conf.guild(ctx.guild).bans()
-                results = uTils().search(query, bans, max=9, speed=True)
+                results = uTils().search(query, bans, max=9, speed=True, filter=filter)
                 format = []
                 for i, res in enumerate(results):
                     format.append(f"""
@@ -57,11 +67,15 @@ class ottsx(commands.Cog):
                         name=ctx.author.display_name,
                         icon_url=ctx.author.avatar_url
                 )
+                if res['risk']:
+                    embed = embed.set_footer(
+                        text='Using 1337x for games/software is risky.'
+                    )
 
-                await ctx.send(embed=embed)
+                await ctx.reply(embed=embed)
             
         except AttributeError:
-            await ctx.send(f"Sorry, no results for **{query}** or there was an error.")
+            await ctx.reply(f"Sorry, no results for **{query}** or there was an error.")
 
 
     @ottsx.command(aliases=["search", "s", "l"])
@@ -72,9 +86,16 @@ class ottsx(commands.Cog):
         pages = []
         try:
             async with ctx.typing():
+                filter = ''
+                if query.__contains__('--'):
+                    flagged = flagging(self, query)
+                    if flagged['flags']: 
+                        query = flagged['line']
+                        filter = flagged['flags'][0]
+
                 bans = await self.conf.guild(ctx.guild).bans()
                 allow_nsfw = await solve_nfilter(self, ctx)
-                result = uTils().search(query, bans, allow_nsfw=allow_nsfw)
+                result = uTils().search(query, bans, allow_nsfw=allow_nsfw, filter=filter)
                 if len(result) < count:
                     count = len(result)
                 for i, res in enumerate(result[0:count:]):
@@ -82,13 +103,13 @@ class ottsx(commands.Cog):
                     pages.append(new_page)
 
             if len(pages) == 0:
-                await ctx.send(f"Sorry, no results for **{query}**.")
+                await ctx.reply(f"Sorry, no results for **{query}**.")
                 return
 
             await menu(ctx, pages, DEFAULT_CONTROLS)
 
         except AttributeError:
-           await ctx.send(f"Sorry, no results for **{query}** or there was an error.")
+           await ctx.reply(f"Sorry, no results for **{query}** or there was an error.")
 
 
     @commands.Cog.listener()
@@ -140,11 +161,11 @@ class ottsx(commands.Cog):
     async def banadd(self, ctx, *, target:str):
         """Add a ban"""
         db_bans = await self.conf.guild(ctx.guild).bans()
-        if db_bans.count(target.lower()): return await ctx.send(f"{target} is already on the ban list.")
+        if db_bans.count(target.lower()): return await ctx.reply(f"{target} is already on the ban list.")
         db_bans.append(target.lower())
         await self.conf.guild(ctx.guild).bans.set(db_bans)
-        if not len(db_bans): return await ctx.send(f"Added {target} to the ban list.")
-        await ctx.send(f"Added {target} to the ban list.\nCurrent bans: {', '.join(db_bans)}")
+        if not len(db_bans): return await ctx.reply(f"Added {target} to the ban list.")
+        await ctx.reply(f"Added {target} to the ban list.\nCurrent bans: {', '.join(db_bans)}")
 
     @settings.command(aliases=['bandel', 'bandelete', 'banrem'])
     async def banremove(self, ctx, *, target:str):
@@ -153,17 +174,17 @@ class ottsx(commands.Cog):
         try:
             db_bans.remove(target.lower())
         except ValueError():
-            return await ctx.send(f"{target} is not on the ban list.")
+            return await ctx.reply(f"{target} is not on the ban list.")
         await self.conf.guild(ctx.guild).bans.set(db_bans)
-        if not len(db_bans): return await ctx.send(f"Ban list is now empty.")
-        await ctx.send(f"Added {target} to the ban list.\nCurrent bans: {', '.join(db_bans)}")
+        if not len(db_bans): return await ctx.reply(f"Ban list is now empty.")
+        await ctx.reply(f"Added {target} to the ban list.\nCurrent bans: {', '.join(db_bans)}")
 
     @settings.command()
     async def banlist(self, ctx):
         """List all current bans."""
         db_bans = await self.conf.guild(ctx.guild).bans()
-        if not len(db_bans): return await ctx.send(f"Ban list is empty.")
-        await ctx.send(f"Current bans: {', '.join(db_bans)}")
+        if not len(db_bans): return await ctx.reply(f"Ban list is empty.")
+        await ctx.reply(f"Current bans: {', '.join(db_bans)}")
 
     @settings.command()
     @commands.guild_only()
@@ -176,7 +197,7 @@ class ottsx(commands.Cog):
         """
         current_status = await self.conf.channel(ctx.channel).imdb_link()
         await self.conf.channel(ctx.channel).imdb_link.set(not current_status)
-        await ctx.send("The channel **{}** now has smartlink as **{}**.".format(ctx.channel.name, not current_status))
+        await ctx.reply("The channel **{}** now has smartlink as **{}**.".format(ctx.channel.name, not current_status))
 
     @settings.command()
     @commands.guild_only()
@@ -189,7 +210,7 @@ class ottsx(commands.Cog):
         """
         current_status = await self.conf.channel(ctx.channel).smartlink_enabled()
         await self.conf.channel(ctx.channel).smartlink_enabled.set(not current_status)
-        await ctx.send("The channel **{}** now has smartlink as **{}**.".format(ctx.channel.name, not current_status))
+        await ctx.reply("The channel **{}** now has smartlink as **{}**.".format(ctx.channel.name, not current_status))
 
     @settings.command(aliases=['nsfwfilter'])
     @commands.guild_only()
@@ -203,11 +224,11 @@ class ottsx(commands.Cog):
         2 - Never show nsfw.
         """
         ratings = {"always be shown", "only be shown in nsfw channels.", "never shown."}
-        if not nfilter_level in [0, 1, 2]: return await ctx.send("Invalid choice, the available options are: `0`, `1`, and `2`.")
+        if not nfilter_level in [0, 1, 2]: return await ctx.reply("Invalid choice, the available options are: `0`, `1`, and `2`.")
         current_status = await self.conf.guild(ctx.guild).nsfw_filter_level()
-        if current_status == nfilter_level: return await ctx.send("Nsfw filter was already set to " + ratings[nfilter_level])
+        if current_status == nfilter_level: return await ctx.reply("Nsfw filter was already set to " + ratings[nfilter_level])
         await self.conf.guild(ctx.guild).nfilter_level.set(nfilter_level)
-        return await ctx.send("Nsfw content will now " + ratings[nfilter_level])
+        return await ctx.reply("Nsfw content will now " + ratings[nfilter_level])
 
 
 # Do I show nsfw?
@@ -216,6 +237,20 @@ async def solve_nfilter(self, ctx):
     if nlevel == 0: return True
     elif nlevel == 1: return ctx.channel.is_nsfw()
     elif nlevel == 2: return False
+
+
+def flagging(self, line:str):
+    ret = {'line': [], 'flags': []}
+    if not line.__contains__('--'): return ret
+    for word in line.split(" "):
+        if word == '--size': ret['flags'].append('size/desc')
+        elif word == '--leechers': ret['flags'].append('leechers/desc')
+        elif word == '--time': ret['flags'].append('time/desc')
+        elif word == '--seeders': ret['flags'].append('seeders/desc')
+        else: ret['line'].append(word)
+
+    return {'line': " ".join(ret['line']), 'flags': ret['flags']}
+
 
 
 #ugly fucking function to make embeds
