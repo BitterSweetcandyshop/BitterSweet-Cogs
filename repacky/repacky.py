@@ -102,7 +102,7 @@ class repacky(commands.Cog):
 
     @scooter.command(aliases=["search", "s", "l"])
     @commands.cooldown(1, 10, commands.BucketType.user)
-    async def lookup(self, ctx, *, query:str):
+    async def lookup(ctx, *, query:str):
         async with ctx.typing():
             results = utilities.scooter.search(query, limit=5)
             repacks = []
