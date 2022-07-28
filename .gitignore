@@ -1,12 +1,13 @@
+.gitignore
+streamr/
+mangadl/
 ottsx/__pycache__
+repacky/__pycache__
 embedspeaker/__pycache__
 rcl/__pycache__
 redmpd/__pycache__
 linkscanner/__pycache__
-streamr/__pycache__
-streamr/
 nyaa/__pycache__
 rarbg/__pycache__
 helpless/__pycache__
-mangadl/__pycache__
-mangadl
+uh.js
