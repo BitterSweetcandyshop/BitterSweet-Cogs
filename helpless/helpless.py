@@ -42,24 +42,32 @@ class Helpless(commands.Cog):
     @commands.bot_has_permissions(embed_links=True)
     async def help(self, ctx, **kwargs):
         embed = discord.Embed(
-            description="""**Torrenting**:
+            description="""**Torrenting**
     Search through some popular trackers:
-    - `1337x`
-    - `nyaa` 
-    - `rarbg`
-**Misc**:
+    - `1337x` (good for movies/tv)
+    - `nyaa` (good for anime/manga)
+    - `rarbg` (good for movies/tv)
+**Repacks/Gaming**
+    - `repack` Search for repacks.
+    - `fitgirl` (repacks)
+    - `scooter` (repacks)
+    - `kaos` (repacks)
+**Misc**
     Need help or want to know some stats?
     - `contact` Reach out to BitterSweet#1337.
     - `help` Shows this embed.
     - `invite` Invite Quinque to your own sevrer. 
-    - `uptime` Total time Quinque has been online.
     - `set` Other tools for server settings.
-    - `info` More information about the bot.
-**AniList**:
+    - `info` More information about the bot, credits, and support.
+**AniList**
     - `anime` Searches for an anime using Anilist.
     - `character` Searches for an anime character using Anilist.
     - `manga` Searches for a manga using Anilist.
     - `user` Searches for a user on Anilist.
+**Notes**
+    - Do not use 1337x for software.
+    - Be careful using 1337x for games.
+    - Flags start with `--`.
             """
         )
         embed = embed.set_author(
@@ -92,21 +100,28 @@ in one place. More importantly though I'm using this project to learn about pars
     This bot is actually an instance of [RedBot](https://github.com/Cog-Creators/Red-DiscordBot) So instead of a full source,
     You can settup a redbot instance, and load up [my cogs](https://github.com/bittersweetcandyshop/BitterSweet-Cogs).
 
-**Art**
-    - Pfp done by ju ju bee#4839
+**Special Thanks**
+    - Pfp: ju ju bee#4839
+    Repackers:
+        - [Scooter](https://scooter-repacks.site)
+        - [FitGFirl](https://fitgirl-repacks.site)
+        - [KaOsKrew](https://kaoskrew.org)
+    Valued Feedback:
+        - [DieDoesMC#0945](https://discord.gg/8WCZGZ5Ucr)
+        - Bulldög#0533
+        - [champagne.sunshine#0968](https://discord.gg/38G68UfhPp)
 
 **Outside Commands**
-    AniList: [Wyn's Cogs](https://github.com/TheWyn/Wyn-RedV3Cogs), Also helped to get started on Nyaa.
-    Valued Feedback:
-    - [DieDoesMC#0945](https://discord.gg/8WCZGZ5Ucr)
-    - Bulldög#0533
-    - champagne.sunshine#0968
+    AniList: [Wyn's Cogs](https://github.com/TheWyn/Wyn-RedV3Cogs)
+    Scrub: [CrunchBangDev's cogs](https://gitlab.com/CrunchBangDev/cbd-cogs)
 
 **Contact**
-    Discord: [BitterSweet#1337](https://discord.gg/ChS8MZDPRA)
-    Reddit: [u/BitterSweetcandyshop](https://www.reddit.com/user/BitterSweetcandyshop)
-    Revolt: @BitterSweet
-    Matrix: bittersweetcandyshop
+    - Discord: [BitterSweet#1337](https://discord.gg/ChS8MZDPRA)
+    - Reddit: [u/BitterSweetcandyshop](https://www.reddit.com/user/BitterSweetcandyshop)
+    - Revolt: @BitterSweet
+    - Matrix: bittersweetcandyshop
+
+
             """
         )
         embed = embed.set_author(
