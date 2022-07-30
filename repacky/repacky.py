@@ -25,9 +25,9 @@ class repacky(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 # Main
-    @commands.cooldown(1, 10, commands.BucketType.user)
+    @commands.group(aliases=["rep"], invoke_without_command=True)
+    @commands.cooldown(1, 15, commands.BucketType.user)
     @commands.guild_only()
-    @commands.command()
     async def repack(self, ctx, *, query:str):
         async with ctx.typing():
             repacks = []
@@ -39,13 +39,42 @@ class repacky(commands.Cog):
             except: pass
             results_formatted = []
             shuffle(repacks)
+            if not repacks: return await ctx.reply('There was no results')
             for i, res in enumerate(repacks):
                 try: results_formatted.append(f"{i+1}. **{res['repacker']}** [{res['name']}]({res['url']})")
                 except: pass
             embed = discord.Embed(description="\n".join(results_formatted))
             embed = embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
         await ctx.reply(embed=embed)
-
+    
+    @repack.command(aliases=["search", "s", "l"])
+    @commands.cooldown(1, 10, commands.BucketType.user)
+    async def lookup(ctx, *, query:str):
+        async with ctx.typing():
+            repacks = []
+            try: repacks.extend(utilities.scooter.search(query, limit=3))
+            except: pass
+            try: repacks.extend(utilities.fitgirl.search(query, limit=3))
+            except: pass
+            try: repacks.extend(utilities.kaoskrew.search(query, limit=3))
+            except: pass
+            repack_embeds = []
+            shuffle(repacks)
+            if not repacks: return await ctx.reply('There was no results')
+            for i, res in enumerate(repacks):
+                try:
+                    if res['repacker'] == 'Scooter':
+                        repack_info = utilities.scooter.parse_page(res['url'])
+                        repack_embeds.append(await scooter_make_embed(repack_info, page=(i+1), count=(len(repacks))))
+                    if res['repacker'] == 'FitGirl':
+                        repack_info = utilities.fitgirl.parse_page(res['url'])
+                        repack_embeds.append(await fitgirl_make_embed(repack_info, page=(i+1), count=(len(repacks))))
+                    if res['repacker'].__contains__('KaOsKrew'): 
+                        repack_info = utilities.kaoskrew.parse_page(res['url'])
+                        repack_embeds.append(await kaoskrew_make_embed(repack_info, page=(i+1), count=(len(repacks))))
+                except: pass
+            if not repack_embeds: return await ctx.reply('There was no results')
+        await menu(ctx, repack_embeds, DEFAULT_CONTROLS)
 
 # Fitgirl
     @commands.group(aliases=["fg"], invoke_without_command=True)
@@ -54,16 +83,8 @@ class repacky(commands.Cog):
     async def fitgirl(self, ctx, *, query:str):
         async with ctx.typing():
             results = utilities.fitgirl.search(query, limit=20)
-            results_formatted = []
-            for i, res in enumerate(results):
-                results_formatted.append(f"{i+1}. [{res['name']}]({res['url']})")
-            embed = discord.Embed(
-                description="\n".join(results_formatted)
-            )
-            embed = embed.set_author(
-                    name=ctx.author.display_name,
-                    icon_url=ctx.author.avatar_url
-            )
+            if not results: return await ctx.reply('There was no results')
+            embed = make_embed(results, ctx.author)
         await ctx.reply(embed=embed)
 
     @fitgirl.command(aliases=["search", "s", "l"])
@@ -72,6 +93,7 @@ class repacky(commands.Cog):
         """Search Fitgirl and get all information."""
         async with ctx.typing():
             results = utilities.fitgirl.search(query, limit=5)
+            if not results: return await ctx.reply('There was no results')
             repacks = []
             for i, res in enumerate(results):
                 repack_info = utilities.fitgirl.parse_page(res['url'])
@@ -87,17 +109,8 @@ class repacky(commands.Cog):
     async def scooter(self, ctx, *, query:str):
         async with ctx.typing():
             results = utilities.scooter.search(query, limit=20)
-            results_formatted = []
-            for i, res in enumerate(results):
-                results_formatted.append(f"{i+1}. [{res['name']}]({res['url']})")
-
-            embed = discord.Embed(
-                description="\n".join(results_formatted)
-            )
-            embed = embed.set_author(
-                    name=ctx.author.display_name,
-                    icon_url=ctx.author.avatar_url
-            )
+            if not results: return await ctx.reply('There was no results')
+            embed = make_embed(results, ctx.author)
         await ctx.reply(embed=embed)
 
     @scooter.command(aliases=["search", "s", "l"])
@@ -105,6 +118,7 @@ class repacky(commands.Cog):
     async def lookup(ctx, *, query:str):
         async with ctx.typing():
             results = utilities.scooter.search(query, limit=5)
+            if not results: return await ctx.reply('There was no results')
             repacks = []
             for i, res in enumerate(results):
                 repack_info = utilities.scooter.parse_page(res['url'])
@@ -120,17 +134,8 @@ class repacky(commands.Cog):
     async def kaoskrew(self, ctx, *, query:str):
         async with ctx.typing():
             results = utilities.kaoskrew.search(query, limit=20)
-            results_formatted = []
-            for i, res in enumerate(results):
-                results_formatted.append(f"{i+1}. [{res['name']}]({res['url']})")
-
-            embed = discord.Embed(
-                description="\n".join(results_formatted)
-            )
-            embed = embed.set_author(
-                    name=ctx.author.display_name,
-                    icon_url=ctx.author.avatar_url
-            )
+            if not results: return await ctx.reply('There was no results')
+            embed = make_embed(results, ctx.author)
         await ctx.reply(embed=embed)
 
     @kaoskrew.command(aliases=["search", "s", "l"])
@@ -138,12 +143,19 @@ class repacky(commands.Cog):
     async def lookup(self, ctx, *, query:str):
         async with ctx.typing():
             results = utilities.kaoskrew.search(query, limit=5)
+            if not results: return await ctx.reply('There was no results')
             repacks = []
             for i, res in enumerate(results):
                 repack_info = utilities.kaoskrew.parse_page(res['url'])
                 repacks.append(await kaoskrew_make_embed(repack_info, page=(i+1), count=(len(results))))
 
         await menu(ctx, repacks, DEFAULT_CONTROLS)
+def make_embed(results, author):
+    results_formatted = []
+    for i, res in enumerate(results): results_formatted.append(f"{i+1}. [{res['name']}]({res['url']})")
+    embed = discord.Embed(description="\n".join(results_formatted))
+    embed = embed.set_author(name=author.display_name, icon_url=author.avatar_url)
+    return embed
 
 async def fitgirl_make_embed(repack_info, page:int=1, count:int=1):
     mirrors_formatted = []

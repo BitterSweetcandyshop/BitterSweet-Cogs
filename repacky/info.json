@@ -1,8 +1,8 @@
 {
     "author": ["BitterSweet#1337"],
     "description": "Parse through trusted repackers' websited for your favourite games.",
-    "install_msg": "Usage is `[p]dodi/fitgirl` to search.\nIf you need help or anything please join my server: https://discord.com/invite/ChS8MZDPRA",
-    "short": "Search safe repackers like dodi, fitgirl and scooter.",
+    "install_msg": "Usage is `[p]repack <query>` to search.\nIf you need help or anything please join my server: https://discord.com/invite/ChS8MZDPRA",
+    "short": "Search safe repackers like KaOsKrew, FitGirl and Scooter.",
     "requirements" : [
         "bs4",
         "requests-futures"
