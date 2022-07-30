@@ -1,0 +1,10 @@
+{
+    "author": ["BitterSweet#1337"],
+    "description": "Parse through trusted rom sites for all those games you want.",
+    "install_msg": "RomDom is a rom searching and util cog, use `[p]rom querey` for search.\nIf you need help or anything please join my server: https://discord.com/invite/ChS8MZDPRA",
+    "short": "Search safe rom sites like Vimm's Lair.",
+    "requirements" : [
+        "bs4",
+        "requests-futures"
+    ]
+}
