@@ -106,7 +106,7 @@ in one place. More importantly though I'm using this project to learn about pars
     - Pfp: ju ju bee#4839
     Repackers:
         - [Scooter](https://scooter-repacks.site)
-        - [FitGFirl](https://fitgirl-repacks.site)
+        - [FitGirl](https://fitgirl-repacks.site)
         - [KaOsKrew](https://kaoskrew.org)
     Valued Feedback:
         - [DieDoesMC#0945](https://discord.gg/8WCZGZ5Ucr)
