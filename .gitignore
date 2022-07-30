@@ -1,5 +1,6 @@
 .gitignore
 streamr/
+rcl/
 mangadl/
 ottsx/__pycache__
 repacky/__pycache__
@@ -10,4 +11,5 @@ linkscanner/__pycache__
 nyaa/__pycache__
 rarbg/__pycache__
 helpless/__pycache__
+romdom/__pycache__
 uh.js
