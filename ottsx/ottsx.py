@@ -203,7 +203,7 @@ class ottsx(commands.Cog):
     @checks.admin_or_permissions(manage_guild=True)
     async def smartlink(self, ctx):
         """
-        IMDB link for 1337x makes it so whenever a 1337x link is sent in an enabled channel. It well fetch data off 1337x about the torrent
+        Smartlink for 1337x makes it so whenever a 1337x link is sent in an enabled channel. It well fetch data off 1337x about the torrent
         _ _
         Run the command in the channel you want enabled/disabled to alter.
         """
