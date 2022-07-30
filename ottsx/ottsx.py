@@ -54,6 +54,7 @@ class ottsx(commands.Cog):
 
                 bans = await self.conf.guild(ctx.guild).bans()
                 results = uTils().search(query, bans, max=9, speed=True, filter=filter)
+                if not results: return await ctx.reply('There was no results')
                 format = []
                 for i, res in enumerate(results):
                     format.append(f"""
@@ -96,16 +97,14 @@ class ottsx(commands.Cog):
                 bans = await self.conf.guild(ctx.guild).bans()
                 allow_nsfw = await solve_nfilter(self, ctx)
                 result = uTils().search(query, bans, allow_nsfw=allow_nsfw, filter=filter)
+                if not result: return await ctx.reply('There was no results')
                 if len(result) < count:
                     count = len(result)
                 for i, res in enumerate(result[0:count:]):
                     new_page = await make_embed(self, res, page=(i+1), count=count)
                     pages.append(new_page)
 
-            if len(pages) == 0:
-                await ctx.reply(f"Sorry, no results for **{query}**.")
-                return
-
+            if not len(pages): return await ctx.reply('There was no results')
             await menu(ctx, pages, DEFAULT_CONTROLS)
 
         except AttributeError:
