@@ -48,10 +48,12 @@ class Helpless(commands.Cog):
     - `nyaa` (good for anime/manga)
     - `rarbg` (good for movies/tv)
 **Repacks/Gaming**
+    Search for your favourite games.
     - `repack` Search for repacks.
     - `fitgirl` (repacks)
     - `scooter` (repacks)
     - `kaos` (repacks)
+    - `vimm` (roms)
 **Misc**
     Need help or want to know some stats?
     - `contact` Reach out to BitterSweet#1337.
@@ -110,6 +112,8 @@ in one place. More importantly though I'm using this project to learn about pars
         - [DieDoesMC#0945](https://discord.gg/8WCZGZ5Ucr)
         - Bulldög#0533
         - [champagne.sunshine#0968](https://discord.gg/38G68UfhPp)
+    Other:
+        - [Vimm's Lair](https://vimm.net)
 
 **Outside Commands**
     AniList: [Wyn's Cogs](https://github.com/TheWyn/Wyn-RedV3Cogs)
@@ -120,8 +124,6 @@ in one place. More importantly though I'm using this project to learn about pars
     - Reddit: [u/BitterSweetcandyshop](https://www.reddit.com/user/BitterSweetcandyshop)
     - Revolt: @BitterSweet
     - Matrix: bittersweetcandyshop
-
-
             """
         )
         embed = embed.set_author(
