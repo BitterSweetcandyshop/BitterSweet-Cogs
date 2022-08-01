@@ -15,7 +15,7 @@ class utilities:
     class darckside:
         def search(query:str, limit:int=10):
             headers = {'User-Agent': 'Mozilla/5.0 (X11; Arch Linux; Linux x86_64; rv:66.0) Gecko/20100101 Firefox/66.0'}
-            r = FuturesSession().get(f"https://darckrepacks.com/search/?&q={query}&type=forums_topic&quick=1&nodes=10&search_and_or=or&sortby=relevancy",headers=headers)
+            r = FuturesSession().get(f"https://darckrepacks.com/search/?&q={query}&type=forums_topic&quick=1&nodes=10&search_and_or=or&search_in=titles&sortby=relevancy",headers=headers)
             soup = BeautifulSoup(r.result().text, 'html.parser')
             posts = soup.select('li.ipsStreamItem')
 
@@ -29,7 +29,6 @@ class utilities:
             return posts_formatted
             
         def parse_page(info_page:str):
-            print(info_page)
             headers = {'User-Agent': 'Mozilla/5.0 (X11; Arch Linux; Linux x86_64; rv:66.0) Gecko/20100101 Firefox/66.0'}
             r = FuturesSession().get(info_page,headers=headers)
             soup = BeautifulSoup(r.result().text, 'html.parser')
