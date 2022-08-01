@@ -7,7 +7,12 @@
         "bs4",
         "requests-futures"
     ],
-    "end_user_data_statement": "No data is stored.",
+    "permissions": [
+        "add_reactions",
+        "embed_links"
+      ],
+    "min_python_version": [3, 6, 0],
+    "end_user_data_statement": "This cog does not persistently store data or metadata about users.",
     "tags": ["piracy", "games", "roms"],
     "hidden": false,
     "disabled": false
