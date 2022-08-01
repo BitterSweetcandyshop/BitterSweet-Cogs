@@ -4,10 +4,6 @@
   "name": "Rarbg Search",
   "short": "Obtains rarbg torrent info",
   "description": "Obtains torrent info from rarbg.to",
-  "disabled": false,
-  "tags": [
-    "nyaa"
-  ],
   "requirements": [
     "bs4",
     "requests-futures"
@@ -16,8 +12,9 @@
     "add_reactions",
     "embed_links"
   ],
-  "min_python_version": [
-    3, 6, 0
-  ],
-  "end_user_data_statement": "This cog does not persistently store data or metadata about users."
+  "min_python_version": [3, 6, 0],
+  "end_user_data_statement": "This cog does not persistently store data or metadata about users.",
+  "tags": ["piracy", "movies", "tv", "rarbg"],
+  "hidden": false,
+  "disabled": false
 }

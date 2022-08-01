@@ -4,6 +4,7 @@
   "name": "Nyaa Searcher",
   "short": "Obtains torrent info.",
   "description": "Obtains torrent info from nyaa.si.",
+  "hidden": false,
   "disabled": false,
   "tags": [
     "nyaa"

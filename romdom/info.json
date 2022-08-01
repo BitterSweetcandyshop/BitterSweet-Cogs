@@ -6,5 +6,9 @@
     "requirements" : [
         "bs4",
         "requests-futures"
-    ]
+    ],
+    "end_user_data_statement": "No data is stored.",
+    "tags": ["piracy", "games", "roms"],
+    "hidden": false,
+    "disabled": false
 }

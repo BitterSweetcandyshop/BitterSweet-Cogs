@@ -5,5 +5,14 @@
     "short": "Use rclone with Red!",
     "requirements" : [
         "python-rclone"
-    ]
+    ],
+    "permissions": [
+        "add_reactions",
+        "embed_links"
+      ],
+    "min_python_version": [3, 6, 0],
+    "end_user_data_statement": "This cog does not persistently store data or metadata about users.",
+    "tags": ["cloud", "storage", "rclone"],
+    "hidden": true,
+    "disabled": true
 }
