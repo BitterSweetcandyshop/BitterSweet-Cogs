@@ -12,6 +12,68 @@ def handle_texts(data):
 
 class utilities:
 
+    class darckside:
+        def search(query:str, limit:int=10):
+            headers = {'User-Agent': 'Mozilla/5.0 (X11; Arch Linux; Linux x86_64; rv:66.0) Gecko/20100101 Firefox/66.0'}
+            r = FuturesSession().get(f"https://darckrepacks.com/search/?&q={query}&type=forums_topic&quick=1&nodes=10&search_and_or=or&sortby=relevancy",headers=headers)
+            soup = BeautifulSoup(r.result().text, 'html.parser')
+            posts = soup.select('li.ipsStreamItem')
+
+            posts_formatted = []
+            for post in posts:
+                if len(posts_formatted) == limit: break
+                posts_formatted.append({
+                    'name': f"{post.select_one('h2.ipsStreamItem_title a').get_text().strip()}",
+                    'url': f"{post.select_one('h2.ipsStreamItem_title a').get('href').split('?do=findComment')[0]}"
+                })
+            return posts_formatted
+            
+        def parse_page(info_page:str):
+            print(info_page)
+            headers = {'User-Agent': 'Mozilla/5.0 (X11; Arch Linux; Linux x86_64; rv:66.0) Gecko/20100101 Firefox/66.0'}
+            r = FuturesSession().get(info_page,headers=headers)
+            soup = BeautifulSoup(r.result().text, 'html.parser')
+            
+            repack = {
+                'name': '',
+                'repacker': f"{soup.select_one('span.ipsType_normal strong span').get_text().strip()} | Darck Repacks" or "n/a - Darck",
+                'repacker_url': soup.select_one('.ipsPhotoPanel > a:nth-child(1)').get('href') or '',
+                'repacker_pfp': soup.select_one('.ipsPhotoPanel > a:nth-child(1) > img:nth-child(1)').get('src') or '',
+                'date': soup.select_one('span.ipsType_normal time').get_text().strip() or 'n/a',
+                'url': info_page,
+                'repack_size': '',
+                'original_size': '',
+                'genre': '',
+                'publisher': '',
+                'developer': '',
+                'thumbnail': soup.select_one('.screenshots').findNextSiblings()[-1].select_one('img').get('src'),
+                'platform': '',
+                'download': [],
+                'nfo': soup.select_one('.repacknfo').findNextSiblings()[-1].select_one('img').get('src')
+            }
+
+            main_data = soup.select_one('.ipsPadding_bottom > center:nth-child(1) > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(2)')
+            for line in main_data.get_text().splitlines():
+                if not line.strip(): continue
+                line = line.lower().strip()
+                if not repack['name']:
+                    repack['name'] = line.title()
+                    continue
+
+                key, value = line.split(':')
+                key = key.strip().replace(' ', '_')
+                if not repack[key]: repack[key] = value.strip()
+            
+            hidden = soup.select_one('.ipsSpoiler_contents')
+            dl_links_raw = hidden.select('a')
+            for a in dl_links_raw:
+                if not a.get('href'): continue
+                repack['download'].append(a.get('href'))
+
+            if not repack['download']: repack['download'].append("Signup required.")
+
+            return repack
+                
     class kaoskrew:
         def search(query:str, limit:int=10):
             headers = {'User-Agent': 'Mozilla/5.0 (X11; Arch Linux; Linux x86_64; rv:66.0) Gecko/20100101 Firefox/66.0'}
@@ -106,7 +168,6 @@ class utilities:
                         else: break
                     except: pass
             return repack
-
 
     class fitgirl:
         def search(query:str, limit:int=10):

@@ -47,18 +47,18 @@ class Helpless(commands.Cog):
     - `1337x` (good for movies/tv)
     - `nyaa` (good for anime/manga)
     - `rarbg` (good for movies/tv)
-**Repacks/Gaming**
+**Games**
     Search for your favourite games.
     - `repack` Search for repacks.
     - `fitgirl` (repacks)
     - `scooter` (repacks)
     - `kaos` (repacks)
+    - `darck` (repacks)
     - `vimm` (roms)
 **Misc**
     Need help or want to know some stats?
     - `contact` Reach out to BitterSweet#1337.
-    - `help` Shows this embed.
-    - `invite` Invite Quinque to your own sevrer. 
+    - `invite` Invite Bit to your own sevrer. 
     - `set` Other tools for server settings.
     - `info` More information about the bot, credits, and support.
 **AniList**
@@ -67,8 +67,7 @@ class Helpless(commands.Cog):
     - `manga` Searches for a manga using Anilist.
     - `user` Searches for a user on Anilist.
 **Notes**
-    - Do not use 1337x for software.
-    - Be careful using 1337x for games.
+    - Do not use 1337x for software or games.
     - Flags start with `--`.
             """
         )
@@ -103,21 +102,27 @@ in one place. More importantly though I'm using this project to learn about pars
     You can settup a redbot instance, and load up [my cogs](https://github.com/bittersweetcandyshop/BitterSweet-Cogs).
 
 **Special Thanks**
-    - Pfp: ju ju bee#4839
-    Repackers:
+    __Repackers__
         - [Scooter](https://scooter-repacks.site)
         - [FitGirl](https://fitgirl-repacks.site)
         - [KaOsKrew](https://kaoskrew.org)
-    Valued Feedback:
+        - [Darck](https://darckrepacks.com/)
+    __Valued Feedback__
         - [DieDoesMC#0945](https://discord.gg/8WCZGZ5Ucr)
         - Bulldög#0533
         - [champagne.sunshine#0968](https://discord.gg/38G68UfhPp)
-    Other:
+        - ReX_XeNoME#9250
+    __Other__
         - [Vimm's Lair](https://vimm.net)
+        - Pfp: ju ju bee#4839
 
 **Outside Commands**
     AniList: [Wyn's Cogs](https://github.com/TheWyn/Wyn-RedV3Cogs)
     Scrub: [CrunchBangDev's cogs](https://gitlab.com/CrunchBangDev/cbd-cogs)
+
+**Donations**
+    I don't take donations right now since server costs aren't an issue.
+    > Consider donating to the awesome repackers and sites this bot uses!
 
 **Contact**
     - Discord: [BitterSweet#1337](https://discord.gg/ChS8MZDPRA)
@@ -132,6 +137,6 @@ in one place. More importantly though I'm using this project to learn about pars
         )
         embed = embed.set_footer(
             text="Just Keep Laughing, and keep seeding.",
-            icon_url="https://cdn.discordapp.com/avatars/932434610233684068/5c7750171fc026c9ad151b21add11b6f.png?size=4096"
+            icon_url="https://cdn.discordapp.com/attachments/932537561166008360/1003456562083414026/clean_rat.jpg"
         )
         await ctx.send(embed=embed)

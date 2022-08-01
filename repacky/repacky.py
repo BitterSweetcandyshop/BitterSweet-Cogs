@@ -37,6 +37,8 @@ class repacky(commands.Cog):
             except: pass
             try: repacks.extend(utilities.kaoskrew.search(query, limit=5))
             except: pass
+            try: repacks.extend(utilities.darckside.search(query, limit=5))
+            except: pass
             results_formatted = []
             shuffle(repacks)
             if not repacks: return await ctx.reply('There was no results')
@@ -58,6 +60,8 @@ class repacky(commands.Cog):
             except: pass
             try: repacks.extend(utilities.kaoskrew.search(query, limit=3))
             except: pass
+            try: repacks.extend(utilities.darckside.search(query, limit=5))
+            except: pass
             repack_embeds = []
             shuffle(repacks)
             if not repacks: return await ctx.reply('There was no results')
@@ -65,13 +69,16 @@ class repacky(commands.Cog):
                 try:
                     if res['repacker'] == 'Scooter':
                         repack_info = utilities.scooter.parse_page(res['url'])
-                        repack_embeds.append(await scooter_make_embed(repack_info, page=(i+1), count=(len(repacks))))
+                        repack_embeds.append(scooter_make_embed(repack_info, page=(i+1), count=(len(repacks))))
                     if res['repacker'] == 'FitGirl':
                         repack_info = utilities.fitgirl.parse_page(res['url'])
-                        repack_embeds.append(await fitgirl_make_embed(repack_info, page=(i+1), count=(len(repacks))))
+                        repack_embeds.append(fitgirl_make_embed(repack_info, page=(i+1), count=(len(repacks))))
                     if res['repacker'].__contains__('KaOsKrew'): 
                         repack_info = utilities.kaoskrew.parse_page(res['url'])
-                        repack_embeds.append(await kaoskrew_make_embed(repack_info, page=(i+1), count=(len(repacks))))
+                        repack_embeds.append(kaoskrew_make_embed(repack_info, page=(i+1), count=(len(repacks))))
+                    if res['repacker'].__contains__('Darck Repacks'): 
+                        repack_info = utilities.darckside.parse_page(res['url'])
+                        repack_embeds.append(darck_make_embed(repack_info, page=(i+1), count=(len(repacks))))
                 except: pass
             if not repack_embeds: return await ctx.reply('There was no results')
         await menu(ctx, repack_embeds, DEFAULT_CONTROLS)
@@ -101,7 +108,6 @@ class repacky(commands.Cog):
                 repacks.append(embed)
         await menu(ctx, repacks, DEFAULT_CONTROLS)
 
-
 # Scooter
     @commands.group(aliases=["sc"], invoke_without_command=True)
     @commands.cooldown(1, 10, commands.BucketType.user)
@@ -122,10 +128,33 @@ class repacky(commands.Cog):
             repacks = []
             for i, res in enumerate(results):
                 repack_info = utilities.scooter.parse_page(res['url'])
-                repacks.append(await scooter_make_embed(repack_info, page=(i+1), count=(len(results))))
+                repacks.append(scooter_make_embed(repack_info, page=(i+1), count=(len(results))))
 
         await menu(ctx, repacks, DEFAULT_CONTROLS)
 
+# Darck
+    @commands.group(aliases=["darckside", "dar"], invoke_without_command=True)
+    @commands.cooldown(1, 10, commands.BucketType.user)
+    @commands.guild_only()
+    async def darck(self, ctx, *, query:str):
+        async with ctx.typing():
+            results = utilities.darckside.search(query, limit=20)
+            if not results: return await ctx.reply('There was no results')
+            embed = make_embed(results, ctx.author)
+        await ctx.reply(embed=embed)
+
+    @darck.command(aliases=["search", "s", "l"])
+    @commands.cooldown(1, 10, commands.BucketType.user)
+    async def lookup(ctx, *, query:str):
+        async with ctx.typing():
+            results = utilities.darckside.search(query, limit=5)
+            if not results: return await ctx.reply('There was no results')
+            repacks = []
+            for i, res in enumerate(results):
+                repack_info = utilities.darckside.parse_page(res['url'])
+                repacks.append(darck_make_embed(repack_info, page=(i+1), count=(len(results))))
+
+        await menu(ctx, repacks, DEFAULT_CONTROLS)
 
 #KaOsKrew
     @commands.group(aliases=["kaos", "kk"], invoke_without_command=True)
@@ -147,9 +176,11 @@ class repacky(commands.Cog):
             repacks = []
             for i, res in enumerate(results):
                 repack_info = utilities.kaoskrew.parse_page(res['url'])
-                repacks.append(await kaoskrew_make_embed(repack_info, page=(i+1), count=(len(results))))
+                repacks.append(kaoskrew_make_embed(repack_info, page=(i+1), count=(len(results))))
 
         await menu(ctx, repacks, DEFAULT_CONTROLS)
+
+
 def make_embed(results, author):
     results_formatted = []
     for i, res in enumerate(results): results_formatted.append(f"{i+1}. [{res['name']}]({res['url']})")
@@ -176,7 +207,7 @@ async def fitgirl_make_embed(repack_info, page:int=1, count:int=1):
     )
     return embed
 
-async def scooter_make_embed(repack_info, page:int=1, count:int=1):
+def scooter_make_embed(repack_info, page:int=1, count:int=1):
     ddls = []
     torrents = []
     for torrent in repack_info['torrents']: torrents.append(f"[{torrent['name']}]({torrent['link']})")
@@ -198,7 +229,29 @@ async def scooter_make_embed(repack_info, page:int=1, count:int=1):
 
     return embed
 
-async def kaoskrew_make_embed(repack_info, page:int=1, count:int=1):
+def darck_make_embed(repack_info, page:int=1, count:int=1):
+    if repack_info['download'][0] != "Signup required.":
+        links_formatted = []
+        for link in repack_info['download']: links_formatted.append(f"[{link.split('//')[1].split('/')[0]}]({link})")
+        repack_info['download'] = ", ".join(links_formatted)
+    else: repack_info['download'] = 'Signup required.'
+
+    embed = discord.Embed(
+        title = repack_info['name'],
+        url = repack_info['url'],
+        description = f"**Posted on:** {repack_info['date']}\n\n**Original Size:** {repack_info['original_size']}\n**Repack Size:** {repack_info['repack_size']}\n**Genre:** {repack_info['genre']}\n**Developer:** {repack_info['developer']}\n**Publisher:** {repack_info['publisher']}\n**Platform:** {repack_info['platform']}\n\n**Download:** {repack_info['download']}"
+    )
+    embed = embed.set_author(
+        name=repack_info['repacker'],
+        url=repack_info['repacker_url'],
+        icon_url=repack_info['repacker_pfp']
+    )
+    embed = embed.set_footer(text=f"page: ({str(page)}/{str(count)})")
+    embed = embed.set_thumbnail(url=repack_info["thumbnail"])
+    embed = embed.set_image(url=repack_info["nfo"])
+    return embed
+
+def kaoskrew_make_embed(repack_info, page:int=1, count:int=1):
     ddls = []
     for ddl in repack_info['ddls']: ddls.append(f"[{ddl['name']}]({ddl['link']})")
     ddls = ", ".join(ddls)
@@ -206,7 +259,7 @@ async def kaoskrew_make_embed(repack_info, page:int=1, count:int=1):
     embed = discord.Embed(
         title = repack_info['name'],
         url = repack_info['url'],
-        description = f"**Posted on:** {repack_info['date']}\n**Install** {ddls}"
+        description = f"**Posted on:** {repack_info['date']}\n**Install:** {ddls}"
     )
     embed = embed.set_author(
         name=repack_info['repacker'],
@@ -214,7 +267,6 @@ async def kaoskrew_make_embed(repack_info, page:int=1, count:int=1):
         icon_url='https://media.discordapp.net/attachments/932537561166008360/1002028187171160167/unknown.png?width=285&height=300'
     )
     embed = embed.set_footer(text=f"page: ({str(page)}/{str(count)})")
-    #embed = embed.set_thumbnail(url=repack_info["thumbnail"])
     embed = embed.set_image(url=repack_info["nfo"])
 
     return embed
