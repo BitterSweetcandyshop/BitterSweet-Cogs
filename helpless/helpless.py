@@ -55,6 +55,10 @@ class Helpless(commands.Cog):
     - `kaos` (repacks)
     - `darck` (repacks)
     - `vimm` (roms)
+**Software**
+    - `software` Search for software.
+    - `monkrus` (software)
+    - `filecr` (software)
 **Misc**
     Need help or want to know some stats?
     - `contact` Reach out to BitterSweet#1337.
