@@ -29,6 +29,7 @@ class repacky(commands.Cog):
     @commands.cooldown(1, 15, commands.BucketType.user)
     @commands.guild_only()
     async def repack(self, ctx, *, query:str):
+        """Search for repacks from trusted sources.\nSources: FitGirl, Darck, Scooter, and KaosKrew"""
         async with ctx.typing():
             repacks = []
             try: repacks.extend(utilities.scooter.search(query, limit=5))
@@ -52,6 +53,7 @@ class repacky(commands.Cog):
     @repack.command(aliases=["search", "s", "l"])
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def lookup(ctx, *, query:str):
+        """Find repacks with all the important information."""
         async with ctx.typing():
             repacks = []
             try: repacks.extend(utilities.scooter.search(query, limit=3))
@@ -88,6 +90,7 @@ class repacky(commands.Cog):
     @commands.cooldown(1, 10, commands.BucketType.user)
     @commands.guild_only()
     async def fitgirl(self, ctx, *, query:str):
+        """Search FitGirl for repacks."""
         async with ctx.typing():
             results = utilities.fitgirl.search(query, limit=20)
             if not results: return await ctx.reply('There was no results')
@@ -97,7 +100,7 @@ class repacky(commands.Cog):
     @fitgirl.command(aliases=["search", "s", "l"])
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def lookup(ctx, *, query:str):
-        """Search Fitgirl and get all information."""
+        """Find repacks with all the important information."""
         async with ctx.typing():
             results = utilities.fitgirl.search(query, limit=5)
             if not results: return await ctx.reply('There was no results')
@@ -113,6 +116,7 @@ class repacky(commands.Cog):
     @commands.cooldown(1, 10, commands.BucketType.user)
     @commands.guild_only()
     async def scooter(self, ctx, *, query:str):
+        """Search Scooter repacks"""
         async with ctx.typing():
             results = utilities.scooter.search(query, limit=20)
             if not results: return await ctx.reply('There was no results')
@@ -122,6 +126,7 @@ class repacky(commands.Cog):
     @scooter.command(aliases=["search", "s", "l"])
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def lookup(ctx, *, query:str):
+        """Find repacks with all the important information."""
         async with ctx.typing():
             results = utilities.scooter.search(query, limit=5)
             if not results: return await ctx.reply('There was no results')
@@ -137,6 +142,7 @@ class repacky(commands.Cog):
     @commands.cooldown(1, 10, commands.BucketType.user)
     @commands.guild_only()
     async def darck(self, ctx, *, query:str):
+        """Search Drack's repacks."""
         async with ctx.typing():
             results = utilities.darckside.search(query, limit=20)
             if not results: return await ctx.reply('There was no results')
@@ -146,6 +152,7 @@ class repacky(commands.Cog):
     @darck.command(aliases=["search", "s", "l"])
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def lookup(ctx, *, query:str):
+        """Find repacks with all the important information."""
         async with ctx.typing():
             results = utilities.darckside.search(query, limit=5)
             if not results: return await ctx.reply('There was no results')
@@ -161,6 +168,7 @@ class repacky(commands.Cog):
     @commands.cooldown(1, 10, commands.BucketType.user)
     @commands.guild_only()
     async def kaoskrew(self, ctx, *, query:str):
+        """Search KaOsKrew repacks."""
         async with ctx.typing():
             results = utilities.kaoskrew.search(query, limit=20)
             if not results: return await ctx.reply('There was no results')
@@ -170,6 +178,7 @@ class repacky(commands.Cog):
     @kaoskrew.command(aliases=["search", "s", "l"])
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def lookup(self, ctx, *, query:str):
+        """Find repacks with all the important information."""
         async with ctx.typing():
             results = utilities.kaoskrew.search(query, limit=5)
             if not results: return await ctx.reply('There was no results')

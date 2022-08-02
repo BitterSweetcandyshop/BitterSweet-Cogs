@@ -29,6 +29,7 @@ class utilities:
             return posts_formatted
             
         def parse_page(info_page:str):
+            print(info_page)
             headers = {'User-Agent': 'Mozilla/5.0 (X11; Arch Linux; Linux x86_64; rv:66.0) Gecko/20100101 Firefox/66.0'}
             r = FuturesSession().get(info_page,headers=headers)
             soup = BeautifulSoup(r.result().text, 'html.parser')
@@ -61,6 +62,7 @@ class utilities:
 
                 key, value = line.split(':')
                 key = key.strip().replace(' ', '_')
+                if key.endswith('s'): key = key[:-1]
                 if not repack[key]: repack[key] = value.strip()
             
             hidden = soup.select_one('.ipsSpoiler_contents')
