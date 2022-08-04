@@ -49,7 +49,7 @@ class utilities:
                 'thumbnail': soup.select_one('.screenshots').findNextSiblings()[-1].select_one('img').get('src'),
                 'platform': '',
                 'download': [],
-                'nfo': soup.select_one('.repacknfo').findNextSiblings()[-1].select_one('img').get('src')
+                'nfo': soup.select_one('.repacknfo').findNextSiblings()[-1].select_one('a').get('href')
             }
 
             main_data = soup.select_one('.ipsPadding_bottom > center:nth-child(1) > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(2)')
