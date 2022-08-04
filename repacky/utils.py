@@ -57,7 +57,7 @@ class utilities:
                 if not line.strip(): continue
                 line = line.lower().strip()
                 if not repack['name']:
-                    repack['name'] = line.title()
+                    repack['name'] = line.title().replace('\'S', '\'s')
                     continue
 
                 key, value = line.split(':')
