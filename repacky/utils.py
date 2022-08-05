@@ -8,14 +8,43 @@ def handle_texts(data):
     for i, text in enumerate(texts):
         if text.__contains__('http'): continue
         result.append({'name': text[:-1], 'link': texts[i+1]})
-    return result or [{'name': '', 'link': ''}]
+    return result or []
 
-class utilities:
+class utilities():
+    headers = {'User-Agent': 'Mozilla/5.0 (X11; Arch Linux; Linux x86_64; rv:66.0) Gecko/20100101 Firefox/66.0'}
+    repack_format = {
+        #Name title stuff
+        'name': '',
+        'name_full': '',
+        'date': '',
+        'url': '',
+        #Repacker
+        'repacker': '',
+        'repacker_url': '',
+        'repacker_pfp': '',
+        #Details
+        'repack_size': '',
+        'original_size': '',
+        'genre': '',
+        'languages': '',
+        'publisher': '',
+        'developer': '',
+        'thumbnail': '',
+        'system_requirements': '',
+        'nfo': '',
+        #Install
+        'download': [],
+        'mirror': [],
+        'magnet': '',
+        'torrent': [],
+        #Tracking
+        'used': False,
+    }
 
     class darckside:
         def search(query:str, limit:int=10):
-            headers = {'User-Agent': 'Mozilla/5.0 (X11; Arch Linux; Linux x86_64; rv:66.0) Gecko/20100101 Firefox/66.0'}
-            r = FuturesSession().get(f"https://darckrepacks.com/search/?&q={query}&type=forums_topic&quick=1&nodes=10&search_and_or=or&search_in=titles&sortby=relevancy",headers=headers)
+            
+            r = FuturesSession().get(f"https://darckrepacks.com/search/?&q={query}&type=forums_topic&quick=1&nodes=10&search_and_or=or&search_in=titles&sortby=relevancy",headers=utilities.headers)
             soup = BeautifulSoup(r.result().text, 'html.parser')
             posts = soup.select('li.ipsStreamItem')
 
@@ -29,28 +58,16 @@ class utilities:
             return posts_formatted
             
         def parse_page(info_page:str):
-            headers = {'User-Agent': 'Mozilla/5.0 (X11; Arch Linux; Linux x86_64; rv:66.0) Gecko/20100101 Firefox/66.0'}
-            r = FuturesSession().get(info_page,headers=headers)
+            
+            r = FuturesSession().get(info_page,headers=utilities.headers)
             soup = BeautifulSoup(r.result().text, 'html.parser')
             
-            repack = {
-                'name': '',
-                'repacker': "n/a - Darck",
-                'repacker_url': '',
-                'repacker_pfp': '',
-                'date': soup.select_one('span.ipsType_normal time').get_text().strip() or 'n/a',
-                'url': info_page,
-                'repack_size': '',
-                'original_size': '',
-                'genre': '',
-                'publisher': '',
-                'developer': '',
-                'thumbnail': '',
-                'platform': '',
-                'download': [],
-                'nfo': '',
-            }
+            repack = utilities.repack_format
 
+            #Url
+            repack['url'] = info_page
+            #Date
+            repack['date'] = soup.select_one('span.ipsType_normal time').get_text().strip()
             # Repacker that posted
             try:
                 repack['repacker'] = f"{soup.select_one('span.ipsType_normal strong span').get_text().strip()} | Darck Repacks" or "n/a - Darck"
@@ -60,8 +77,8 @@ class utilities:
             #Thumbnail
             try: repack['thumbnail'] = soup.select_one('img[data-ratio="36.87"]').get('src')
             except: pass
-            #NFO
-            try: repack['nfo'] = soup.select_one('.repacknfo').findNextSiblings()[-1].select_one('a').get('href')
+            #NFO 
+            try: repack['nfo'] = repack['nfo'] = soup.select_one('.repacknfo').findNextSibling('p').select_one('a').get('href')
             except: pass
             #Data box
             try:
@@ -85,8 +102,10 @@ class utilities:
                 hidden = soup.select_one('.ipsSpoiler_contents')
                 dl_links_raw = hidden.select('a')
                 for a in dl_links_raw:
-                    if not a.get('href'): continue
-                    repack['download'].append(a.get('href'))
+                    link = a.get('href')
+                    if not link: continue
+                    name = link.split('//')[1].split('/')[0]
+                    repack['download'].append({'name': name, 'link': a.get('href')})
             except: pass
 
             if (not repack['download']) and (not repack['nfo']):  repack['download'].append('This seems to be an older post, please visit the page for information.')
@@ -96,8 +115,8 @@ class utilities:
                 
     class kaoskrew:
         def search(query:str, limit:int=10):
-            headers = {'User-Agent': 'Mozilla/5.0 (X11; Arch Linux; Linux x86_64; rv:66.0) Gecko/20100101 Firefox/66.0'}
-            r = FuturesSession().get(f"https://kaoskrew.org/search.php?keywords={query}&terms=any&author=&fid%5B%5D=13&sc=1&sf=all&sr=posts&sk=t&sd=d&st=0&ch=300&t=0&submit=Search",headers=headers)
+            
+            r = FuturesSession().get(f"https://kaoskrew.org/search.php?keywords={query}&terms=any&author=&fid%5B%5D=13&sc=1&sf=all&sr=posts&sk=t&sd=d&st=0&ch=300&t=0&submit=Search",headers=utilities.headers)
             soup = BeautifulSoup(r.result().text, 'html.parser')
             posts = soup.select('.search.post')
 
@@ -114,32 +133,37 @@ class utilities:
             return posts_formatted
 
         def parse_page(info_page:str):
-            headers = {'User-Agent': 'Mozilla/5.0 (X11; Arch Linux; Linux x86_64; rv:66.0) Gecko/20100101 Firefox/66.0'}
-            r = FuturesSession().get(info_page,headers=headers)
+            
+            r = FuturesSession().get(info_page,headers=utilities.headers)
             soup = BeautifulSoup(r.result().text, 'html.parser')
             content = soup.select_one('.post')
             
-            repack = {
-                'repacker': f'{content.select_one("a.username-coloured:nth-child(2)").get_text()} - KaOsKrew',
-                'name': content.select_one('.first > a:nth-child(1)').get_text(),
-                'url': info_page,
-                'date': content.select_one('.author').getText().split('» ')[-1].strip(),
-                'nfo': content.select('img.postimage')[-1].get('src'),
-                'ddls': []
-            }
+            repack = utilities.repack()
+            
+            repack['repacker'] = f'{content.select_one("a.username-coloured:nth-child(2)").get_text()} | KaOsKrew'
+            repack['repacker_url'] = 'https://kaoskrew.org/'
+            repack['repacker_pfp'] = 'https://media.discordapp.net/attachments/932537561166008360/1002028187171160167/unknown.png?width=285&height=300'
+            repack['name'] = content.select_one('.first > a:nth-child(1)').get_text()
+            repack['url'] = info_page
+            repack['date'] = content.select_one('.author').getText().split('» ')[-1].strip()
+            repack['nfo'] = content.select('img.postimage')[-1].get('src')
+            repack['download'] = []
+            
 
             for a in content.select('.content a.postlink'):
-                if not a.get_text(): continue
-                if a.get_text() == 'Here': continue
-                if not a.get('href'): continue
-                repack['ddls'].append({'name': a.get_text(), 'link': a.get('href')})
+                try:
+                    if not a.get_text(): continue
+                    if a.get_text() == 'Here': continue
+                    if not a.get('href'): continue
+                    repack['download'].append({'name': a.get_text(), 'link': a.get('href')})
+                except: pass
 
             return repack
 
     class scooter:
         def search(query:str, limit:int=10):
-            headers = {'User-Agent': 'Mozilla/5.0 (X11; Arch Linux; Linux x86_64; rv:66.0) Gecko/20100101 Firefox/66.0'}
-            r = FuturesSession().get(f"https://scooter-repacks.site/?s={query}",headers=headers)
+            
+            r = FuturesSession().get(f"https://scooter-repacks.site/?s={query}",headers=utilities.headers)
             soup = BeautifulSoup(r.result().text, 'html.parser')
             posts = soup.select('article', limit=limit)
 
@@ -155,44 +179,44 @@ class utilities:
             return posts_formatted
 
         def parse_page(info_page:str):
-            headers = {'User-Agent': 'Mozilla/5.0 (X11; Arch Linux; Linux x86_64; rv:66.0) Gecko/20100101 Firefox/66.0'}
-            r = FuturesSession().get(info_page,headers=headers)
+            repack = utilities().repack_format
+            print(repack)
+            print()
+            
+            r = FuturesSession().get(info_page,headers=utilities.headers)
             soup = BeautifulSoup(r.result().text, 'html.parser')
             content = soup.select_one('article')
 
-            repack = {
-                'repacker': 'Scooter',
-                'name': content.select_one('.title').get_text() or 'Error',
-                'date':  soup.select_one('time').get_text() or 'n/a',
-                'summary': 'n/a',
-                'nfo': content.select('figure img')[-1].get('data-src') or '',
-                'size': 'n/a',
-                'system': '',
-                'url': info_page,
-                'ddl': '',
-                'torrents': [],
-                'thumbnail': content.select('figure img')[0].get('data-src') or ''
-            }
-            try: repack['size'] = repack['name'].split('|')[-1].strip()
+            repack['repacker'] = 'Scooter'
+            repack['name_full'] = content.select_one('.title').get_text() or 'Error'
+            repack['date'] =  soup.select_one('time').get_text() or 'n/a'
+            repack['nfo'] = content.select('figure img')[-1].get('data-src') or ''
+            repack['system_requirements'] = '',
+            repack['url'] = info_page
+            repack['thumbnail'] = content.select('figure img')[0].get('data-src') or ''
+            try: repack['repack_size'] = repack['name'].split('|')[-1].strip()
             except: pass
 
-            spoiler = content.select('div.wp-block-inline-spoilers-block > div:nth-child(1) > div:nth-child(2)')
+            spoiler = content.select('div.wp-block-inline-spoilers-block div.spoiler-head')
             if spoiler:
-                for i, section in enumerate(spoiler):
-                    if not section: continue
-                    try:
-                        if i == 0: repack['system'] = sub(r'<div[^>]*>', '', str(section)).replace('/', '').replace('<br>', '\n').replace('<strong>', '**').replace('\n\n', '\n')[:-5]
-                        elif i == 1: repack['summary'] = sub(r'<div[^>]*>', '', str(section)).replace('/', '').replace('<br>', '\n').replace('<strong>', '**').replace('\n\n', '\n')[:-5]
-                        elif i == 2: repack['ddl'] = section.select_one('a').get('href') or ''
-                        elif i == 3: repack['torrents'] = handle_texts(section)
-                        else: break
-                    except: pass
+                for section in spoiler:
+                    # We just don't look at this, all you need to know it works oddly well
+                    #try:
+                        header = section.get_text().lower().strip()
+                        keybase = {'torrent': 'torrent', 'system requirements': 'system_requirements', 'about this game': 'summary', 'download links': 'download'}
+                        hidden_sibling = section.findNextSibling('div')
+                        if keybase[header] == 'torrent': repack['torrent'] = handle_texts(hidden_sibling)
+                        elif keybase[header] == 'download':
+                            link = hidden_sibling.select_one('a').get('href')
+                            repack['download'].append({'name': link.split('//')[1].split('/')[0], 'link': link})
+                        else: repack[keybase[header]] = sub(r'<div[^>]*>', '', str(hidden_sibling)).replace('/', '').replace('<br>', '\n').replace('<strong>', '**').replace('\n\n', '\n')[:-5]
+                    #except: pass # fuckit, I don't really need if statments when failure is an option lmao
             return repack
 
     class fitgirl:
         def search(query:str, limit:int=10):
-            headers = {'User-Agent': 'Mozilla/5.0 (X11; Arch Linux; Linux x86_64; rv:66.0) Gecko/20100101 Firefox/66.0'}
-            r = FuturesSession().get(f"https://fitgirl-repacks.site/?s={query}",headers=headers)
+            
+            r = FuturesSession().get(f"https://fitgirl-repacks.site/?s={query}",headers=utilities.headers)
             soup = BeautifulSoup(r.result().text, 'html.parser')
             posts = soup.select('article', limit=limit)
 
@@ -208,52 +232,50 @@ class utilities:
             return posts_formatted
 
         def parse_page(info_page:str):
-            headers = {'User-Agent': 'Mozilla/5.0 (X11; Arch Linux; Linux x86_64; rv:66.0) Gecko/20100101 Firefox/66.0'}
-            r = FuturesSession().get(info_page,headers=headers)
+            repack = utilities.repack_info
+            stable_repack = repack
+
+            r = FuturesSession().get(info_page,headers=utilities.headers)
             soup = BeautifulSoup(r.result().text, 'html.parser')
             content = soup.select_one('.entry-content')
 
-            repack = {
-                'repacker': 'FitGirl',
-                'mirrors': [],
-                'name': soup.select_one('.entry-title').get_text(),
-                'date':  soup.select_one('a time').get_text(),
-                'summary': 'n/a',
-                'genres': 'n/a',
-                'company': 'n/a',
-                'languages': 'n/a',
-                'original_size': 'n/a',
-                'repack_size': 'n/a',
-                'url': info_page,
-                'magnet': 'n/a',
-                'torrent': 'n/a',
-                'thumbnail': content.select_one('p a img').get('src') or ''
-            }
-
+            repack['repacker'] = 'FitGirl'
+            repack['repacker_url'] = 'https://fitgirl-repacks.site/'
+            repack['repacker_pfp'] = "https://fitgirl-repacks.site/wp-content/uploads/2020/08/icon_fg-1.jpg"
+            repack['name'] = soup.select_one('.entry-title').get_text().strip()
+            repack['date'] =  soup.select_one('a time').get_text().strip()
+            repack['url'] = info_page
+            #Thumbnail
+            try: repack['thumbnail'] = content.select_one('p a img').get('src')
+            except: pass
+            #Adding links to install
             mirrors_section = content.select('li a')
             for mirror in mirrors_section:
-                link = mirror.get('href')
-                text = mirror.get_text() or ''
-                if (not link) or (not text): continue
-                if link.startswith('magnet'):
-                    repack['magnet'] = link
-                    continue
-                if text.startswith('.torrent'):
-                    repack['torrent'] = link
-                    continue
-                repack['mirrors'].append({'name': text, 'link': link})
-
-            try: repack['spoiler'] = content.select_one('.su-spoiler-content').get_text()
+                try:
+                    if not mirror: continue
+                    link = mirror.get('href')
+                    text = mirror.get_text() or ''
+                    if (not link) or (not text): continue
+                    if link.startswith('magnet') and (not repack['magnet']): repack['magnet'] = link
+                    elif text.startswith('.torrent') and (not repack['torrent']): repack['torrent'] = [{'name': 'Torrent', 'link': link}]
+                    else: repack['mirror'].append({'name': text, 'link': link})
+                except: pass
+            #Summary
+            try: repack['summary'] = content.select_one('.su-spoiler-content').get_text().strip()
             except: pass
-
-            top_info = content.select_one('p').get_text()
-            for line in top_info.splitlines():
-                #if repack['repack_size']: break
-                if line.__contains__('Genres/Tags:'): repack['genres'] = line.split(': ')[-1]
-                elif line.__contains__('Company:'): repack['company'] = line.split(': ')[-1]
-                elif line.__contains__('Languages:'): repack['languages'] = line.split(': ')[-1]
-                elif line.__contains__('Original Size:'): repack['original_size'] = line.split(': ')[-1]
-                elif line.__contains__('Repack Size:'): repack['repack_size'] = line.split(': ')[-1]
-            return repack
+            #Other data
+            try:
+                top_info = content.select_one('p').get_text()
+                for line in top_info.splitlines():
+                    try:
+                        if line.__contains__('Genres/Tags:'): repack['genres'] = line.split(': ')[-1]
+                        elif line.__contains__('Company:') or line.__contains__('Companies:'): repack['company'] = line.split(': ')[-1]
+                        elif line.__contains__('Languages:'): repack['languages'] = line.split(': ')[-1]
+                        elif line.__contains__('Original Size:'): repack['original_size'] = line.split(': ')[-1]
+                        elif line.__contains__('Repack Size:'): repack['repack_size'] = line.split(': ')[-1]
+                    except: pass
+            except: pass
+            
+            return repack_info
 
 

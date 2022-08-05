@@ -80,7 +80,7 @@ class repacky(commands.Cog):
                         repack_embeds.append(kaoskrew_make_embed(repack_info, page=(i+1), count=(len(repacks))))
                     if res['repacker'].__contains__('Darck Repacks'): 
                         repack_info = utilities.darckside.parse_page(res['url'])
-                        repack_embeds.append(darck_make_embed(repack_info, page=(i+1), count=(len(repacks))))
+                        repack_embeds.append(make_page_embed(repack_info, page=(i+1), count=(len(repacks))))
                 except: pass
             if not repack_embeds: return await ctx.reply('There was no results')
         await menu(ctx, repack_embeds, DEFAULT_CONTROLS)
@@ -133,7 +133,7 @@ class repacky(commands.Cog):
             repacks = []
             for i, res in enumerate(results):
                 repack_info = utilities.scooter.parse_page(res['url'])
-                repacks.append(scooter_make_embed(repack_info, page=(i+1), count=(len(results))))
+                repacks.append(await make_page_embed(repack_info, page=(i+1), count=(len(results))))
 
         await menu(ctx, repacks, DEFAULT_CONTROLS)
 
@@ -159,7 +159,7 @@ class repacky(commands.Cog):
             repacks = []
             for i, res in enumerate(results):
                 repack_info = utilities.darckside.parse_page(res['url'])
-                repacks.append(darck_make_embed(repack_info, page=(i+1), count=(len(results))))
+                repacks.append(await make_page_embed(repack_info, page=(i+1), count=(len(results))))
 
         await menu(ctx, repacks, DEFAULT_CONTROLS)
 
@@ -238,17 +238,34 @@ def scooter_make_embed(repack_info, page:int=1, count:int=1):
 
     return embed
 
-def darck_make_embed(repack_info, page:int=1, count:int=1):
-    if not repack_info['download'][0]:
-        links_formatted = []
-        for link in repack_info['download']: links_formatted.append(f"[{link.split('//')[1].split('/')[0]}]({link})")
-        repack_info['download'] = ", ".join(links_formatted)
-    else: repack_info['download'] = "\n" + repack_info['download'][0]
+async def make_page_embed(repack_info, page:int=1, count:int=1):
+    description_main = []
+    for key in repack_info.keys():
+        if not repack_info[key]: continue
+        #Description
+        elif key in ['original_size', 'repack_size', 'publisher', 'developer', 'languages', 'genre', 'date', 'system_requirements']: description_main.append(f"**{key.replace('_', ' ').title()}:** {repack_info[key]}")
+       # Links
+        elif key == 'magnet': repack_info['magnet'] = f"[Magnet]({await shorten(repack_info['magnet'])})"
+        elif key in ['download', 'mirror', 'torrent']:
+            links_formatted = []
+            if isinstance(repack_info[key][0], str): links_formatted.append(repack_info[key][0])
+            else: 
+                for option in repack_info[key]: links_formatted.append(f"[{option['name']}]({option['link']})")
+            repack_info[key] = f"**{key.title()}:** " + (', '.join(links_formatted)) # Don't question it
 
+    has_altered = False
+    for altered_key in ['download', 'magnet', 'torrent', 'mirror']:
+        if not repack_info[altered_key]: continue
+        if not has_altered:
+            has_altered = True
+            description_main.append('\n')
+        description_main.append(repack_info[altered_key])
+
+    description_main = "\n".join(description_main)
     embed = discord.Embed(
-        title = repack_info['name'],
+        title = repack_info['name'] or repack_info['name_full'],
         url = repack_info['url'],
-        description = f"**Posted on:** {repack_info['date']}\n\n**Original Size:** {repack_info['original_size']}\n**Repack Size:** {repack_info['repack_size']}\n**Genre:** {repack_info['genre']}\n**Developer:** {repack_info['developer']}\n**Publisher:** {repack_info['publisher']}\n**Platform:** {repack_info['platform']}\n\n**Download:** {repack_info['download']}"
+        description = f"{description_main}"
     )
     embed = embed.set_author(
         name=repack_info['repacker'],
@@ -256,8 +273,8 @@ def darck_make_embed(repack_info, page:int=1, count:int=1):
         icon_url=repack_info['repacker_pfp']
     )
     embed = embed.set_footer(text=f"page: ({str(page)}/{str(count)})")
-    embed = embed.set_thumbnail(url=repack_info["thumbnail"])
-    embed = embed.set_image(url=repack_info["nfo"])
+    if repack_info["thumbnail"]: embed = embed.set_thumbnail(url=repack_info["thumbnail"])
+    if repack_info["nfo"]: embed = embed.set_image(url=repack_info["nfo"])
     return embed
 
 def kaoskrew_make_embed(repack_info, page:int=1, count:int=1):
