@@ -1,4 +1,5 @@
 from re import sub
+from copy import deepcopy
 from bs4 import BeautifulSoup
 from requests_futures.sessions import FuturesSession
 
@@ -37,8 +38,6 @@ class utilities():
         'mirror': [],
         'magnet': '',
         'torrent': [],
-        #Tracking
-        'used': False,
     }
 
     class darckside:
@@ -62,7 +61,7 @@ class utilities():
             r = FuturesSession().get(info_page,headers=utilities.headers)
             soup = BeautifulSoup(r.result().text, 'html.parser')
             
-            repack = utilities.repack_format
+            repack = deepcopy(utilities.repack_format)
 
             #Url
             repack['url'] = info_page
@@ -71,8 +70,8 @@ class utilities():
             # Repacker that posted
             try:
                 repack['repacker'] = f"{soup.select_one('span.ipsType_normal strong span').get_text().strip()} | Darck Repacks" or "n/a - Darck"
-                repack['repacker_url']: soup.select_one('.ipsPhotoPanel > a:nth-child(1)').get('href') or ''
-                repack['repacker_pfp']: soup.select_one('.ipsPhotoPanel > a:nth-child(1) > img:nth-child(1)').get('src') or ''
+                repack['repacker_url'] = soup.select_one('span.ipsType_normal strong a').get('href')
+                repack['repacker_pfp'] = soup.select_one('a.ipsUserPhoto_mini img').get('src')
             except: pass
             #Thumbnail
             try: repack['thumbnail'] = soup.select_one('img[data-ratio="36.87"]').get('src')
@@ -133,19 +132,19 @@ class utilities():
             return posts_formatted
 
         def parse_page(info_page:str):
+            print(info_page)
+            repack = deepcopy(utilities.repack_format)
             
             r = FuturesSession().get(info_page,headers=utilities.headers)
             soup = BeautifulSoup(r.result().text, 'html.parser')
-            content = soup.select_one('.post')
+            content = soup.select_one('.page-body')
             
-            repack = utilities.repack()
-            
-            repack['repacker'] = f'{content.select_one("a.username-coloured:nth-child(2)").get_text()} | KaOsKrew'
-            repack['repacker_url'] = 'https://kaoskrew.org/'
-            repack['repacker_pfp'] = 'https://media.discordapp.net/attachments/932537561166008360/1002028187171160167/unknown.png?width=285&height=300'
-            repack['name'] = content.select_one('.first > a:nth-child(1)').get_text()
+            repack['repacker'] = f'{content.select_one("a.username-coloured").get_text()} | KaOsKrew'
+            repack['repacker_url'] = 'https://kaoskrew.org/' + content.select_one("a.username-coloured").get('href')[1:]
+            repack['repacker_pfp'] = content.select_one('img.avatar').get('src')
+            repack['name_full'] = content.select_one('h2.topic-title').get_text()
             repack['url'] = info_page
-            repack['date'] = content.select_one('.author').getText().split('» ')[-1].strip()
+            repack['date'] = content.select_one('p.author time').getText().split('» ')[-1].strip()
             repack['nfo'] = content.select('img.postimage')[-1].get('src')
             repack['download'] = []
             
@@ -179,9 +178,7 @@ class utilities():
             return posts_formatted
 
         def parse_page(info_page:str):
-            repack = utilities().repack_format
-            print(repack)
-            print()
+            repack = deepcopy(utilities.repack_format)
             
             r = FuturesSession().get(info_page,headers=utilities.headers)
             soup = BeautifulSoup(r.result().text, 'html.parser')
@@ -201,16 +198,17 @@ class utilities():
             if spoiler:
                 for section in spoiler:
                     # We just don't look at this, all you need to know it works oddly well
-                    #try:
+                    try:
                         header = section.get_text().lower().strip()
                         keybase = {'torrent': 'torrent', 'system requirements': 'system_requirements', 'about this game': 'summary', 'download links': 'download'}
+                        for other_download in ['google drive', 'letsupload', 'megaup', 'pixeldrain']: keybase[other_download] = "download"
                         hidden_sibling = section.findNextSibling('div')
                         if keybase[header] == 'torrent': repack['torrent'] = handle_texts(hidden_sibling)
                         elif keybase[header] == 'download':
                             link = hidden_sibling.select_one('a').get('href')
                             repack['download'].append({'name': link.split('//')[1].split('/')[0], 'link': link})
-                        else: repack[keybase[header]] = sub(r'<div[^>]*>', '', str(hidden_sibling)).replace('/', '').replace('<br>', '\n').replace('<strong>', '**').replace('\n\n', '\n')[:-5]
-                    #except: pass # fuckit, I don't really need if statments when failure is an option lmao
+                        else: repack[keybase[header]] = sub(r'<div[^>]*>', '', str(hidden_sibling)).replace('/', '').replace('<br>', '\n').replace('<strong>', '**').replace('\n\n', '\n')[12:-5].strip()
+                    except: pass # fuckit, I don't really need if statments when failure is an option lmao
             return repack
 
     class fitgirl:
@@ -232,8 +230,7 @@ class utilities():
             return posts_formatted
 
         def parse_page(info_page:str):
-            repack = utilities.repack_info
-            stable_repack = repack
+            repack = deepcopy(utilities.repack_format)
 
             r = FuturesSession().get(info_page,headers=utilities.headers)
             soup = BeautifulSoup(r.result().text, 'html.parser')
@@ -254,12 +251,17 @@ class utilities():
                 try:
                     if not mirror: continue
                     link = mirror.get('href')
-                    text = mirror.get_text() or ''
+                    text = mirror.get_text().strip() or ''
                     if (not link) or (not text): continue
                     if link.startswith('magnet') and (not repack['magnet']): repack['magnet'] = link
-                    elif text.startswith('.torrent') and (not repack['torrent']): repack['torrent'] = [{'name': 'Torrent', 'link': link}]
-                    else: repack['mirror'].append({'name': text, 'link': link})
+                    elif text.__contains__('.torrent') and (not repack['torrent']): repack['torrent'].append({'name': 'Torrent', 'link': link})
+                    elif text != 'magnet': repack['mirror'].append({'name': text, 'link': link})
                 except: pass
+            # Faux nfo, just torrent/magnet status, doesn't actually work but nice to include if it ever does
+            try:
+                torrent_stats = content.select_one('li img').get('src')
+                repack["nfo"] = torrent_stats
+            except: pass
             #Summary
             try: repack['summary'] = content.select_one('.su-spoiler-content').get_text().strip()
             except: pass
@@ -275,7 +277,6 @@ class utilities():
                         elif line.__contains__('Repack Size:'): repack['repack_size'] = line.split(': ')[-1]
                     except: pass
             except: pass
-            
-            return repack_info
+            return repack
 
 

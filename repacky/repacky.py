@@ -107,7 +107,7 @@ class repacky(commands.Cog):
             repacks = []
             for i, res in enumerate(results):
                 repack_info = utilities.fitgirl.parse_page(res['url'])
-                embed = await fitgirl_make_embed(repack_info, page=(i+1), count=(len(results)))
+                embed = await make_page_embed(repack_info, page=(i+1), count=(len(results)))
                 repacks.append(embed)
         await menu(ctx, repacks, DEFAULT_CONTROLS)
 
@@ -185,7 +185,7 @@ class repacky(commands.Cog):
             repacks = []
             for i, res in enumerate(results):
                 repack_info = utilities.kaoskrew.parse_page(res['url'])
-                repacks.append(kaoskrew_make_embed(repack_info, page=(i+1), count=(len(results))))
+                repacks.append(await make_page_embed(repack_info, page=(i+1), count=(len(results))))
 
         await menu(ctx, repacks, DEFAULT_CONTROLS)
 
@@ -199,7 +199,7 @@ def make_embed(results, author):
 
 async def fitgirl_make_embed(repack_info, page:int=1, count:int=1):
     mirrors_formatted = []
-    for mirror in repack_info['mirrors']: mirrors_formatted.append(f"[{mirror['name']}]({mirror['link']})")
+    for mirror in repack_info['mirror']: mirrors_formatted.append(f"[{mirror['name']}]({mirror['link']})")
     mirrors_formatted = ", ".join(mirrors_formatted)
 
     embed = discord.Embed(
@@ -216,28 +216,6 @@ async def fitgirl_make_embed(repack_info, page:int=1, count:int=1):
     )
     return embed
 
-def scooter_make_embed(repack_info, page:int=1, count:int=1):
-    ddls = []
-    torrents = []
-    for torrent in repack_info['torrents']: torrents.append(f"[{torrent['name']}]({torrent['link']})")
-    torrents = ", ".join(torrents)
-
-    embed = discord.Embed(
-        title = repack_info['name'],
-        url = repack_info['url'],
-        description = f"**Posted on:** {repack_info['date']}\n\n**Summary:**\n{repack_info['summary'][:256]}...\n\n{repack_info['system'].split('**Recommended:')[0]}\n\n**Direct Download:** [offical]({repack_info['ddl']})\n**Torrent:** {torrents}"
-    )
-    embed = embed.set_author(
-        name='Scooter Repacks',
-        url='https://scooter-repacks.site',
-        icon_url='https://cdn.discordapp.com/icons/815595843205464095/a_8be5d23c5b078d04cb64c59a02ffe430.png'
-    )
-    embed = embed.set_footer(text=f"page: ({str(page)}/{str(count)})")
-    embed = embed.set_thumbnail(url=repack_info["thumbnail"])
-    embed = embed.set_image(url=repack_info["nfo"])
-
-    return embed
-
 async def make_page_embed(repack_info, page:int=1, count:int=1):
     description_main = []
     for key in repack_info.keys():
@@ -245,7 +223,7 @@ async def make_page_embed(repack_info, page:int=1, count:int=1):
         #Description
         elif key in ['original_size', 'repack_size', 'publisher', 'developer', 'languages', 'genre', 'date', 'system_requirements']: description_main.append(f"**{key.replace('_', ' ').title()}:** {repack_info[key]}")
        # Links
-        elif key == 'magnet': repack_info['magnet'] = f"[Magnet]({await shorten(repack_info['magnet'])})"
+        elif key == 'magnet': repack_info['magnet'] = f"**Magnet:** [Magnet]({await shorten(repack_info['magnet'])})"
         elif key in ['download', 'mirror', 'torrent']:
             links_formatted = []
             if isinstance(repack_info[key][0], str): links_formatted.append(repack_info[key][0])
