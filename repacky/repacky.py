@@ -239,11 +239,11 @@ def scooter_make_embed(repack_info, page:int=1, count:int=1):
     return embed
 
 def darck_make_embed(repack_info, page:int=1, count:int=1):
-    if repack_info['download'][0] != "Signup required.":
+    if not repack_info['download'][0]:
         links_formatted = []
         for link in repack_info['download']: links_formatted.append(f"[{link.split('//')[1].split('/')[0]}]({link})")
         repack_info['download'] = ", ".join(links_formatted)
-    else: repack_info['download'] = 'Signup required.'
+    else: repack_info['download'] = "\n" + repack_info['download'][0]
 
     embed = discord.Embed(
         title = repack_info['name'],

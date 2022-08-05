@@ -29,16 +29,15 @@ class utilities:
             return posts_formatted
             
         def parse_page(info_page:str):
-            print(info_page)
             headers = {'User-Agent': 'Mozilla/5.0 (X11; Arch Linux; Linux x86_64; rv:66.0) Gecko/20100101 Firefox/66.0'}
             r = FuturesSession().get(info_page,headers=headers)
             soup = BeautifulSoup(r.result().text, 'html.parser')
             
             repack = {
                 'name': '',
-                'repacker': f"{soup.select_one('span.ipsType_normal strong span').get_text().strip()} | Darck Repacks" or "n/a - Darck",
-                'repacker_url': soup.select_one('.ipsPhotoPanel > a:nth-child(1)').get('href') or '',
-                'repacker_pfp': soup.select_one('.ipsPhotoPanel > a:nth-child(1) > img:nth-child(1)').get('src') or '',
+                'repacker': "n/a - Darck",
+                'repacker_url': '',
+                'repacker_pfp': '',
                 'date': soup.select_one('span.ipsType_normal time').get_text().strip() or 'n/a',
                 'url': info_page,
                 'repack_size': '',
@@ -46,31 +45,51 @@ class utilities:
                 'genre': '',
                 'publisher': '',
                 'developer': '',
-                'thumbnail': soup.select_one('.screenshots').findNextSiblings()[-1].select_one('img').get('src'),
+                'thumbnail': '',
                 'platform': '',
                 'download': [],
-                'nfo': soup.select_one('.repacknfo').findNextSiblings()[-1].select_one('a').get('href')
+                'nfo': '',
             }
 
-            main_data = soup.select_one('.ipsPadding_bottom > center:nth-child(1) > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(2)')
-            for line in main_data.get_text().splitlines():
-                if not line.strip(): continue
-                line = line.lower().strip()
-                if not repack['name']:
-                    repack['name'] = line.title().replace('\'S', '\'s')
-                    continue
+            # Repacker that posted
+            try:
+                repack['repacker'] = f"{soup.select_one('span.ipsType_normal strong span').get_text().strip()} | Darck Repacks" or "n/a - Darck"
+                repack['repacker_url']: soup.select_one('.ipsPhotoPanel > a:nth-child(1)').get('href') or ''
+                repack['repacker_pfp']: soup.select_one('.ipsPhotoPanel > a:nth-child(1) > img:nth-child(1)').get('src') or ''
+            except: pass
+            #Thumbnail
+            try: repack['thumbnail'] = soup.select_one('img[data-ratio="36.87"]').get('src')
+            except: pass
+            #NFO
+            try: repack['nfo'] = soup.select_one('.repacknfo').findNextSiblings()[-1].select_one('a').get('href')
+            except: pass
+            #Data box
+            try:
+                main_data = soup.select_one('.ipsPadding_bottom > center:nth-child(1) > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(2)')
+                for line in main_data.get_text().splitlines():
+                    if not line.strip(): continue
+                    line = line.lower().strip()
+                    if not repack['name']:
+                        repack['name'] = line.title().replace('\'S', '\'s')
+                        continue
 
-                key, value = line.split(':')
-                key = key.strip().replace(' ', '_')
-                if key.endswith('s'): key = key[:-1]
-                if not repack[key]: repack[key] = value.strip()
-            
-            hidden = soup.select_one('.ipsSpoiler_contents')
-            dl_links_raw = hidden.select('a')
-            for a in dl_links_raw:
-                if not a.get('href'): continue
-                repack['download'].append(a.get('href'))
+                    key, value = line.split(':')
+                    key = key.strip().replace(' ', '_')
+                    if key.endswith('s'): key = key[:-1]
+                    if not repack[key]: repack[key] = value.strip().title()
+            except:
+                try: repack['name'] = soup.select_one('span.ipsType_break > span:nth-child(1)').get_text().strip()
+                except: pass
+            #Downloads
+            try:
+                hidden = soup.select_one('.ipsSpoiler_contents')
+                dl_links_raw = hidden.select('a')
+                for a in dl_links_raw:
+                    if not a.get('href'): continue
+                    repack['download'].append(a.get('href'))
+            except: pass
 
+            if (not repack['download']) and (not repack['nfo']):  repack['download'].append('This seems to be an older post, please visit the page for information.')
             if not repack['download']: repack['download'].append("Signup required.")
 
             return repack
