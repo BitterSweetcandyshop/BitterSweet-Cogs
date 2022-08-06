@@ -69,18 +69,13 @@ class repacky(commands.Cog):
             if not repacks: return await ctx.reply('There was no results')
             for i, res in enumerate(repacks):
                 try:
-                    if res['repacker'] == 'Scooter':
-                        repack_info = utilities.scooter.parse_page(res['url'])
-                        repack_embeds.append(scooter_make_embed(repack_info, page=(i+1), count=(len(repacks))))
-                    if res['repacker'] == 'FitGirl':
-                        repack_info = utilities.fitgirl.parse_page(res['url'])
-                        repack_embeds.append(fitgirl_make_embed(repack_info, page=(i+1), count=(len(repacks))))
-                    if res['repacker'].__contains__('KaOsKrew'): 
-                        repack_info = utilities.kaoskrew.parse_page(res['url'])
-                        repack_embeds.append(kaoskrew_make_embed(repack_info, page=(i+1), count=(len(repacks))))
-                    if res['repacker'].__contains__('Darck Repacks'): 
-                        repack_info = utilities.darckside.parse_page(res['url'])
-                        repack_embeds.append(make_page_embed(repack_info, page=(i+1), count=(len(repacks))))
+                    repack_info = None
+                    if res['repacker'] == 'Scooter': repack_info = utilities.scooter.parse_page(res['url'])
+                    elif res['repacker'] == 'FitGirl':repack_info = utilities.fitgirl.parse_page(res['url'])
+                    elif res['repacker'].__contains__('KaOsKrew'): repack_info = utilities.kaoskrew.parse_page(res['url'])
+                    elif res['repacker'].__contains__('Darck Repacks'):  repack_info = utilities.darckside.parse_page(res['url'])
+                    else: continue
+                    if repack_info: repack_embeds.append(await make_page_embed(repack_info, page=(i+1), count=(len(repacks))))
                 except: pass
             if not repack_embeds: return await ctx.reply('There was no results')
         await menu(ctx, repack_embeds, DEFAULT_CONTROLS)
@@ -197,25 +192,6 @@ def make_embed(results, author):
     embed = embed.set_author(name=author.display_name, icon_url=author.avatar_url)
     return embed
 
-async def fitgirl_make_embed(repack_info, page:int=1, count:int=1):
-    mirrors_formatted = []
-    for mirror in repack_info['mirror']: mirrors_formatted.append(f"[{mirror['name']}]({mirror['link']})")
-    mirrors_formatted = ", ".join(mirrors_formatted)
-
-    embed = discord.Embed(
-        title = repack_info['name'],
-        url = repack_info['url'],
-        description=f"[Magnet]({await shorten(repack_info['magnet'])}) - [Torrent]({repack_info['torrent']})\n\n**Summary:**\n{repack_info['summary'][:256]}...\n\n**Genres:** {repack_info['genres']}\n**Company:** {repack_info['company']}\n**Languages:** {repack_info['languages']}\n**Original Size:** {repack_info['original_size']}\n**Repack Size:** {repack_info['repack_size']}\n**Posted:** {repack_info['date']}\n\n**Mirrors**\n{mirrors_formatted}"
-    )
-    embed = embed.set_footer(text=f"page: ({str(page)}/{str(count)})")
-    embed = embed.set_thumbnail(url=repack_info["thumbnail"])
-    embed = embed.set_author(
-        name='FitGirl Repacks',
-        url='https://fitgirl-repacks.site',
-        icon_url='https://fitgirl-repacks.site/wp-content/uploads/2020/08/icon_fg-1.jpg'
-    )
-    return embed
-
 async def make_page_embed(repack_info, page:int=1, count:int=1):
     description_main = []
     for key in repack_info.keys():
@@ -253,24 +229,4 @@ async def make_page_embed(repack_info, page:int=1, count:int=1):
     embed = embed.set_footer(text=f"page: ({str(page)}/{str(count)})")
     if repack_info["thumbnail"]: embed = embed.set_thumbnail(url=repack_info["thumbnail"])
     if repack_info["nfo"]: embed = embed.set_image(url=repack_info["nfo"])
-    return embed
-
-def kaoskrew_make_embed(repack_info, page:int=1, count:int=1):
-    ddls = []
-    for ddl in repack_info['ddls']: ddls.append(f"[{ddl['name']}]({ddl['link']})")
-    ddls = ", ".join(ddls)
-
-    embed = discord.Embed(
-        title = repack_info['name'],
-        url = repack_info['url'],
-        description = f"**Posted on:** {repack_info['date']}\n**Install:** {ddls}"
-    )
-    embed = embed.set_author(
-        name=repack_info['repacker'],
-        url='https://kaoskrew.org',
-        icon_url='https://media.discordapp.net/attachments/932537561166008360/1002028187171160167/unknown.png?width=285&height=300'
-    )
-    embed = embed.set_footer(text=f"page: ({str(page)}/{str(count)})")
-    embed = embed.set_image(url=repack_info["nfo"])
-
     return embed

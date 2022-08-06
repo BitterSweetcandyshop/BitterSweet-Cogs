@@ -188,7 +188,6 @@ class utilities():
             repack['name_full'] = content.select_one('.title').get_text() or 'Error'
             repack['date'] =  soup.select_one('time').get_text() or 'n/a'
             repack['nfo'] = content.select('figure img')[-1].get('data-src') or ''
-            repack['system_requirements'] = '',
             repack['url'] = info_page
             repack['thumbnail'] = content.select('figure img')[0].get('data-src') or ''
             try: repack['repack_size'] = repack['name'].split('|')[-1].strip()
