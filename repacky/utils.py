@@ -51,6 +51,7 @@ class utilities():
             for post in posts:
                 if len(posts_formatted) == limit: break
                 posts_formatted.append({
+                    'repacker': 'Darck Repacks',
                     'name': f"{post.select_one('h2.ipsStreamItem_title a').get_text().strip()}",
                     'url': f"{post.select_one('h2.ipsStreamItem_title a').get('href').split('?do=findComment')[0]}"
                 })
