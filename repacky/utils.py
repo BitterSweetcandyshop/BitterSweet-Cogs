@@ -149,6 +149,15 @@ class utilities():
             repack['nfo'] = content.select('img.postimage')[-1].get('src')
             repack['download'] = []
             
+            # From respect of gangster who runs KaOsKrew's site, I have removed
+            #showing download links in the embed
+            #for a in content.select('.content a.postlink'):
+            #    try:
+            #        if not a.get_text(): continue
+            #        if a.get_text() == 'Here': continue
+            #        if not a.get('href'): continue
+            #        repack['download'].append({'name': a.get_text(), 'link': a.get('href')})
+            #    except: pass
 
             for a in content.select('.content a.postlink'):
                 try:
