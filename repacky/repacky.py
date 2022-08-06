@@ -56,19 +56,19 @@ class repacky(commands.Cog):
         """Find repacks with all the important information."""
         async with ctx.typing():
             repacks = []
-            #try: repacks.extend(utilities.scooter.search(query, limit=3))
-            #except: pass
-            #try: repacks.extend(utilities.fitgirl.search(query, limit=3))
-            #except: pass
-            #try: repacks.extend(utilities.kaoskrew.search(query, limit=3))
-            #except: pass
+            try: repacks.extend(utilities.scooter.search(query, limit=3))
+            except: pass
+            try: repacks.extend(utilities.fitgirl.search(query, limit=3))
+            except: pass
+            try: repacks.extend(utilities.kaoskrew.search(query, limit=3))
+            except: pass
             try: repacks.extend(utilities.darckside.search(query, limit=3))
             except: pass
             repack_embeds = []
             shuffle(repacks)
             if not repacks: return await ctx.reply('There was no results')
             for i, res in enumerate(repacks):
-                #try:
+                try:
                     repack_info = None
                     print(res['url'])
                     if res['repacker'] == 'Scooter': repack_info = utilities.scooter.parse_page(res['url'])
@@ -77,14 +77,14 @@ class repacky(commands.Cog):
                     elif res['repacker'].__contains__('Darck Repacks'):  repack_info = utilities.darckside.parse_page(res['url'])
                     else: print("Passed: " + res['url'])
                     if repack_info: repack_embeds.append(await make_page_embed(repack_info, page=(i+1), count=(len(repacks))))
-                #except: 
-                #    embed = discord.Embed(
-                #        title=res['name'],
-                #        url=res['url'],
-                #        description="Failed to load page data."
-                #    )
-                ##    embed = embed.set_footer(text = f'Page: {str(i+1)}/{str(len(repacks))}')
-                 #   repack_embeds.append(embed)
+                except: 
+                    embed = discord.Embed(
+                        title=res['name'],
+                        url=res['url'],
+                        description="Failed to load page data."
+                    )
+                    embed = embed.set_footer(text = f'Page: {str(i+1)}/{str(len(repacks))}')
+                    repack_embeds.append(embed)
             if not repack_embeds: return await ctx.reply('There was no results')
         await menu(ctx, repack_embeds, DEFAULT_CONTROLS)
 
