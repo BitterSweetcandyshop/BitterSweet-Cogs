@@ -25,29 +25,25 @@ class repacky(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 # Main
-    @commands.group(aliases=["rep"], invoke_without_command=True)
+    @commands.group(aliases=["rep", "game", "games"], invoke_without_command=True)
     @commands.cooldown(1, 15, commands.BucketType.user)
     @commands.guild_only()
     async def repack(self, ctx, *, query:str):
         """Search for repacks from trusted sources.\nSources: FitGirl, Darck, Scooter, and KaosKrew"""
         async with ctx.typing():
             repacks = []
-            try: repacks.extend(utilities.scooter.search(query, limit=5))
+            try: repacks.extend(utilities.scooter.search(query, limit=3))
             except: pass
-            try: repacks.extend(utilities.fitgirl.search(query, limit=5))
+            try: repacks.extend(utilities.fitgirl.search(query, limit=3))
             except: pass
-            try: repacks.extend(utilities.kaoskrew.search(query, limit=5))
+            try: repacks.extend(utilities.kaoskrew.search(query, limit=3))
             except: pass
-            try: repacks.extend(utilities.darckside.search(query, limit=5))
+            try: repacks.extend(utilities.darckside.search(query, limit=3))
             except: pass
             results_formatted = []
             shuffle(repacks)
             if not repacks: return await ctx.reply('There was no results')
-            for i, res in enumerate(repacks):
-                try: results_formatted.append(f"{i+1}. **{res['repacker']}** [{res['name']}]({res['url']})")
-                except: pass
-            embed = discord.Embed(description="\n".join(results_formatted))
-            embed = embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
+            embed = make_embed(repacks, ctx.author)
         await ctx.reply(embed=embed)
     
     @repack.command(aliases=["search", "s", "l"])
@@ -70,7 +66,6 @@ class repacky(commands.Cog):
             for i, res in enumerate(repacks):
                 try:
                     repack_info = None
-                    print(res['url'])
                     if res['repacker'] == 'Scooter': repack_info = utilities.scooter.parse_page(res['url'])
                     elif res['repacker'] == 'FitGirl':repack_info = utilities.fitgirl.parse_page(res['url'])
                     elif res['repacker'].__contains__('KaOsKrew'): repack_info = utilities.kaoskrew.parse_page(res['url'])
@@ -194,7 +189,7 @@ class repacky(commands.Cog):
 
 def make_embed(results, author):
     results_formatted = []
-    for i, res in enumerate(results): results_formatted.append(f"{i+1}. [{res['name']}]({res['url']})")
+    for i, res in enumerate(results): results_formatted.append(f"**{i+1}. {res['repacker']}**\n[{res['name']}]({res['url']})")
     embed = discord.Embed(description="\n".join(results_formatted))
     embed = embed.set_author(name=author.display_name, icon_url=author.avatar_url)
     return embed
