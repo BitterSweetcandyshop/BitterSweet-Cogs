@@ -1,4 +1,5 @@
 from re import sub
+import requests
 from copy import deepcopy
 from bs4 import BeautifulSoup
 from requests_futures.sessions import FuturesSession
@@ -26,6 +27,9 @@ class utilities():
         #Details
         'repack_size': '',
         'original_size': '',
+        'seeders': '',
+        'leechers': '',
+        'downloads': '',
         'genre': '',
         'languages': '',
         'publisher': '',
@@ -116,7 +120,7 @@ class utilities():
     class kaoskrew:
         def search(query:str, limit:int=10):
             
-            r = FuturesSession().get(f"https://kaoskrew.org/search.php?keywords={query}&terms=any&author=&fid%5B%5D=13&sc=1&sf=all&sr=posts&sk=t&sd=d&st=0&ch=300&t=0&submit=Search",headers=utilities.headers)
+            r = FuturesSession().get(f"https://kaoskrew.org/search.php?keywords={query}&terms=all&author=&fid[]=13&sc=1&sf=titleonly&sr=posts&sk=t&sd=d&st=0&ch=300&t=0&submit=Search",headers=utilities.headers)
             soup = BeautifulSoup(r.result().text, 'html.parser')
             posts = soup.select('.search.post')
 
@@ -133,7 +137,6 @@ class utilities():
             return posts_formatted
 
         def parse_page(info_page:str):
-            print(info_page)
             repack = deepcopy(utilities.repack_format)
             
             r = FuturesSession().get(info_page,headers=utilities.headers)
@@ -147,7 +150,6 @@ class utilities():
             repack['url'] = info_page
             repack['date'] = content.select_one('p.author time').getText().split('» ')[-1].strip()
             repack['nfo'] = content.select('img.postimage')[-1].get('src')
-            repack['download'] = []
             
             # From respect of gangster who runs KaOsKrew's site, I have removed
             #showing download links in the embed
@@ -159,13 +161,7 @@ class utilities():
             #        repack['download'].append({'name': a.get_text(), 'link': a.get('href')})
             #    except: pass
 
-            for a in content.select('.content a.postlink'):
-                try:
-                    if not a.get_text(): continue
-                    if a.get_text() == 'Here': continue
-                    if not a.get('href'): continue
-                    repack['download'].append({'name': a.get_text(), 'link': a.get('href')})
-                except: pass
+            return repack
 
         def latest():
             r = FuturesSession().get('https://kaoskrew.org/feed/13', headers=utilities.headers)
@@ -200,6 +196,8 @@ class utilities():
             content = soup.select_one('article')
 
             repack['repacker'] = 'Scooter'
+            repack['repacker_url'] = "https://scooter-repacks.site"
+            repack['repacker_pfp'] = "https://scooter-repacks.site/wp-content/uploads/2021/02/Letter-S-icon-1-60x60.png"
             repack['name_full'] = content.select_one('.title').get_text() or 'Error'
             repack['date'] =  soup.select_one('time').get_text() or 'n/a'
             repack['nfo'] = content.select('figure img')[-1].get('data-src') or ''
@@ -231,7 +229,7 @@ class utilities():
             repack = r.text.split('<link>')[1].split('</link>')[0]
             print('hi')
             return repack
-            
+
     class fitgirl:
         def search(query:str, limit:int=10):
             
@@ -252,6 +250,7 @@ class utilities():
 
         def parse_page(info_page:str):
             repack = deepcopy(utilities.repack_format)
+            ottsx_data = None
 
             r = FuturesSession().get(info_page,headers=utilities.headers)
             soup = BeautifulSoup(r.result().text, 'html.parser')
@@ -276,7 +275,9 @@ class utilities():
                     if (not link) or (not text): continue
                     if link.startswith('magnet') and (not repack['magnet']): repack['magnet'] = link
                     elif text.__contains__('.torrent') and (not repack['torrent']): repack['torrent'].append({'name': 'Torrent', 'link': link})
-                    elif text != 'magnet': repack['mirror'].append({'name': text, 'link': link})
+                    elif text != 'magnet':
+                        if "1337x" in text: ottsx_data = utilities.ottsx.speedy_search(link)
+                        repack['mirror'].append({'name': text, 'link': link})
                 except: pass
             # Faux nfo, just torrent/magnet status, doesn't actually work but nice to include if it ever does
             try:
@@ -298,6 +299,53 @@ class utilities():
                         elif line.__contains__('Repack Size:'): repack['repack_size'] = line.split(': ')[-1]
                     except: pass
             except: pass
+            # 1337x data
+            if ottsx_data:
+                print(ottsx_data)
+                for key in repack.keys():
+                    if (not repack[key] and ottsx_data.get(key)): repack[key] = ottsx_data[key]
+
             return repack
 
+        def latest():
+            r = requests.get('https://fitgirl-repacks.site/feed/', headers=utilities.headers)
+            print(r.text)
+            repack = r.text.split('<link>')[1].split('</link>')[0]
+            print('hi')
+            return repack
 
+    class ottsx:
+        def speedy_search(info_page:str):
+            try:
+                magR = FuturesSession().get(info_page,headers=utilities.headers)
+                pirate_soup = BeautifulSoup(magR.result().text, 'html.parser')
+
+                torrent = {
+                    'magnet': '',
+                    'torrent': '',
+                    'url': info_page,
+                    'seeders': '',
+                    'leechers': '',
+                    'downloads': '',
+                }
+
+                dl_elms = pirate_soup.select("main div div div div div ul li a")
+                for dl_elm in dl_elms:
+                    if torrent['torrent'] and torrent['magnet']: break
+                    if dl_elm:
+                        link = dl_elm.get('href')
+                        if link:
+                            if link.endswith('.torrent'): torrent['torrent'] = [{'name': link.split('//')[-1].split('/')[0], 'link': link}]
+                            elif link.startswith('magnet'): torrent['magnet'] = link
+
+                sl_elm = pirate_soup.select("main div div div div div ul.list li")
+                for sl in sl_elm:
+                    if torrent['leechers']: break
+                    try:
+                        text_data = sl.get_text().strip().lower()
+                        if text_data.startswith("seeders"): torrent['seeders'] = text_data.split(" ")[-1]
+                        elif text_data.startswith("leechers"): torrent['leechers'] = text_data.split(" ")[-1]
+                        elif text_data.startswith("downloads"): torrent['downloads'] = text_data.split(" ")[-1]
+                    except: continue
+                return torrent
+            except: pass

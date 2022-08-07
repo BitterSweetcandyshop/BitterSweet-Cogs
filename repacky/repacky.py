@@ -192,6 +192,14 @@ class repacky(commands.Cog):
 
         await menu(ctx, repacks, DEFAULT_CONTROLS)
 
+    @kaoskrew.command()
+    @commands.cooldown(1, 10, commands.BucketType.user)
+    async def latest(self, ctx):
+        """Get latest KaOsKrew Post"""
+        async with ctx.typing():
+            repack_info = utilities.kaoskrew.latest()
+            embed = await make_page_embed(repack_info)
+        return await ctx.reply(embed=embed)
 
 def make_embed(results, author):
     results_formatted = []
@@ -205,7 +213,7 @@ async def make_page_embed(repack_info, page:int=1, count:int=1):
     for key in repack_info.keys():
         if not repack_info[key]: continue
         #Description
-        elif key in ['original_size', 'repack_size', 'publisher', 'developer', 'languages', 'genre', 'date', 'system_requirements']: description_main.append(f"**{key.replace('_', ' ').title()}:** {repack_info[key]}")
+        elif key in ['seeders', 'leechers', 'downloads', 'original_size', 'repack_size', 'publisher', 'developer', 'languages', 'genre', 'date', 'system_requirements']: description_main.append(f"**{key.replace('_', ' ').title()}:** {repack_info[key]}")
        # Links
         elif key == 'magnet': repack_info['magnet'] = f"**Magnet:** [Magnet]({await shorten(repack_info['magnet'])})"
         elif key in ['download', 'mirror', 'torrent']:
