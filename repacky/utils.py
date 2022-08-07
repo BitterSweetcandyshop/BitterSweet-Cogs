@@ -167,6 +167,11 @@ class utilities():
                     repack['download'].append({'name': a.get_text(), 'link': a.get('href')})
                 except: pass
 
+        def latest():
+            r = FuturesSession().get('https://kaoskrew.org/feed/13', headers=utilities.headers)
+            posts_feed = BeautifulSoup(r.result().text, 'html.parser')
+            latest = posts_feed.select_one('entry')
+            repack = utilities.kaoskrew.parse_page(latest.select_one('link').get('href'))
             return repack
 
     class scooter:
@@ -220,6 +225,13 @@ class utilities():
                     except: pass # fuckit, I don't really need if statments when failure is an option lmao
             return repack
 
+        def latest():
+            r = requests.get('https://scooter-repacks.site/feed/', headers=utilities.headers)
+            print(r.text)
+            repack = r.text.split('<link>')[1].split('</link>')[0]
+            print('hi')
+            return repack
+            
     class fitgirl:
         def search(query:str, limit:int=10):
             
