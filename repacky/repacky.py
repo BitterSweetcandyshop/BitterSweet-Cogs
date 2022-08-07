@@ -192,15 +192,6 @@ class repacky(commands.Cog):
 
         await menu(ctx, repacks, DEFAULT_CONTROLS)
 
-    @kaoskrew.command()
-    @commands.cooldown(1, 10, commands.BucketType.user)
-    async def latest(self, ctx):
-        """Get latest KaOsKrew Post"""
-        async with ctx.typing():
-            repack_info = utilities.kaoskrew.latest()
-            embed = await make_page_embed(repack_info)
-        return await ctx.reply(embed=embed)
-
 def make_embed(results, author):
     results_formatted = []
     for i, res in enumerate(results): results_formatted.append(f"{i+1}. [{res['name']}]({res['url']})")

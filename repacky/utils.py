@@ -223,13 +223,6 @@ class utilities():
                     except: pass # fuckit, I don't really need if statments when failure is an option lmao
             return repack
 
-        def latest():
-            r = requests.get('https://scooter-repacks.site/feed/', headers=utilities.headers)
-            print(r.text)
-            repack = r.text.split('<link>')[1].split('</link>')[0]
-            print('hi')
-            return repack
-
     class fitgirl:
         def search(query:str, limit:int=10):
             
@@ -301,17 +294,9 @@ class utilities():
             except: pass
             # 1337x data
             if ottsx_data:
-                print(ottsx_data)
                 for key in repack.keys():
                     if (not repack[key] and ottsx_data.get(key)): repack[key] = ottsx_data[key]
 
-            return repack
-
-        def latest():
-            r = requests.get('https://fitgirl-repacks.site/feed/', headers=utilities.headers)
-            print(r.text)
-            repack = r.text.split('<link>')[1].split('</link>')[0]
-            print('hi')
             return repack
 
     class ottsx:
