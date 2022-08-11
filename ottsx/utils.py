@@ -1,10 +1,37 @@
+from copy import deepcopy
 from bs4 import BeautifulSoup
 from requests_futures.sessions import FuturesSession
 
 class uTils:
     headers = {'User-Agent': 'Mozilla/5.0 (X11; Arch Linux; Linux x86_64; rv:66.0) Gecko/20100101 Firefox/66.0'}
 
-    def search(self, keyword, bans:list=[], **kwargs):
+    torrent = {
+        'url': '',
+        'name': '',
+        'genres': [],
+        'magnet': '',
+        'torrent': '',
+        'stream': '',
+        'category': '',
+        'type': '',
+        'language': '',
+        'total_size': '',
+        'uploaded_by': '',
+        'downloads': '',
+        'last_checked': '',
+        'date_uploaded': '',
+        'seeders': '',
+        'leechers': '',
+        'uploaded_by_url': '',
+        'short_title': '',
+        'short_title_url': '',
+        'description': '',
+        'thumbnail': '',
+        'nsfw': False,
+        'risk': False
+    }
+
+    def search(keyword, bans:list=[], **kwargs):
         """
         Return a list of dicts with the results of the query.
         """
@@ -31,7 +58,7 @@ class uTils:
             filter = f'/{filter}'
             base = 'sort-search'
 
-        r = FuturesSession().get(f"http://1337x.to/{base}/{keyword}{category}{filter}/1/",headers=self.headers)
+        r = FuturesSession().get(f"http://1337x.to/{base}/{keyword}{category}{filter}/1/",headers=uTils.headers)
 
         soup = BeautifulSoup(r.result().text, 'html.parser')
         allas = soup.select('table tr a')
@@ -47,139 +74,113 @@ class uTils:
 
             torrent = False
             if speed:
-                torrent = self.speedy_search(f"https://1337x.to{main_link}", bans=bans, ignore_bans=ignore_bans, allow_nsfw=allow_nsfw)
+                torrent = uTils.speedy_search(f"https://1337x.to{main_link}", bans=bans, ignore_bans=ignore_bans, allow_nsfw=allow_nsfw)
             else:
-                torrent = self.single_parse(f"https://1337x.to{main_link}", bans=bans, ignore_bans=ignore_bans, allow_nsfw=allow_nsfw)
+                torrent = uTils.single_parse(f"https://1337x.to{main_link}", bans=bans, ignore_bans=ignore_bans, allow_nsfw=allow_nsfw)
             if torrent: torrents.append(torrent)
 
         return torrents
     
-    def speedy_search(self, main_link:str, bans:list=[], ignore_bans:bool=False, allow_nsfw:bool=False):
+    def speedy_search(main_link:str, bans:list=[], ignore_bans:bool=False, allow_nsfw:bool=False):
+    #settup
         if ignore_bans: bans=[]
+        magR = FuturesSession().get(main_link,headers=uTils.headers)
+        pirate_soup = BeautifulSoup(magR.result().text, 'html.parser')
+
+        torrent = deepcopy(uTils.torrent)
+
+    # Name and url
+        torrent['name'] = pirate_soup.select_one('div.box-info-heading').get_text().strip()
+        if any(ele in torrent['name'].lower() for ele in bans): return False
+        torrent['url'] = main_link
+
+    # Center Table scraping (Speed)
+        sl_elm = pirate_soup.select("main div div div div div ul.list li")
+        for sl in sl_elm:
+            if torrent['leechers']: break
+            try:
+                text_data = sl.get_text().strip()
+                if text_data.startswith("uploaded by"):
+                    if any(ele in text_data[11:] for ele in bans): return False
+                    torrent['uploaded_by'] = text_data
+                text_data = text_data.lower()
+                if text_data.startswith("seeders"): torrent['seeders'] = text_data.split(" ")[-1]
+                elif text_data.startswith("category"):
+                    if text_data.__contains__("xxx"): 
+                        if not allow_nsfw: return False
+                        print("Allowed nsfw")
+                        print()
+                        torrent['nsfw'] = True
+                    torrent['category'] = text_data.title()
+                    if text_data.__contains__("games") or text_data.__contains__("software"): torrent['risk'] = True
+                elif text_data.startswith("leechers"): torrent['leechers'] = text_data.split(" ")[-1]
+                elif text_data.startswith("downloads"): torrent['downloads'] = text_data.split(" ")[-1]
+                elif text_data.startswith("total size"): torrent['total_size'] = "".join(text_data.split(" ")[-2:])
+            except: continue
+
+        # Buttons
+        dl_elms = pirate_soup.select("main div div div div div ul li a")
+        for dl_elm in dl_elms:
+            if dl_elm:
+                link = dl_elm.get('href')
+                if link:
+                    if link.endswith('.torrent'): torrent['torrent'] = [{'name': link.split('//')[-1].split('/')[0], 'link': link}]
+                    elif link.startswith('magnet'): torrent['magnet'] = link
+
+        # Center Table scraping
+
+        return torrent
+
+    def single_parse(main_link:str, bans:list=[], ignore_bans:bool=False, allow_nsfw:bool=False):
         try:
-            magR = FuturesSession().get(
-                    main_link,
-                    headers=self.headers)
+        #settup
+            if ignore_bans: bans=[]
+            magR = FuturesSession().get(main_link,headers=uTils.headers)
             pirate_soup = BeautifulSoup(magR.result().text, 'html.parser')
 
+            torrent = deepcopy(uTils.torrent)
+
+        # Name and url
+            torrent['name'] = pirate_soup.select_one('div.box-info-heading').get_text().strip()
+            if any(ele in torrent['name'].lower() for ele in bans): return False
+            torrent['url'] = main_link
+
+        # Buttons
             dl_elms = pirate_soup.select("main div div div div div ul li a")
-            torrent = ''
-            magnet = ''
             for dl_elm in dl_elms:
-                if torrent and magnet: break
                 if dl_elm:
                     link = dl_elm.get('href')
                     if link:
-                        if link.endswith('.torrent'):
-                            torrent = link
-                        if link.startswith('magnet'):
-                            magnet = link
-                        
+                        if link.endswith('.torrent'): torrent['torrent'] = [{'name': link.split('//')[-1].split('/')[0], 'link': link}]
+                        elif link.startswith('magnet'): torrent['magnet'] = link
+                        elif link.startswith('https://nova'): torrent['stream'] = link
 
-            sl_elm = pirate_soup.select("main div div div div div ul li")
-            seeders = ''
-            leechers = ''
-            size = ''
-            risk = False
+        # Center Table scraping (Slow)
+            sl_elm = pirate_soup.select("main div div div div div ul.list li")
             for sl in sl_elm:
-                if seeders and leechers and size: break
-                text_data = sl.get_text()
-                if not text_data: continue
-                if not text_data.startswith(" "): continue
-                if ("xxx" in text_data.lower()) and not allow_nsfw: return False # no nsfw?
-                if ("category" in text_data.lower()): # check risk
-                    if ("games" in text_data.lower()) or ("software" in text_data.lower()): risk = True
-                if not (text_data.startswith(" Seeders") or text_data.startswith(" Leechers") or text_data.startswith(" Uploaded By  ") or text_data.startswith(" Total size")): continue
-                elif text_data.startswith(" Uploaded By  "):
-                    if any(text_data.split(" ")[-2].lower().__contains__(ele) for ele in bans): return False # banned uploader?
-                elif text_data.startswith(" Seeders"):
-                    seeders = text_data.split(" ")[-2]
-                elif text_data.startswith(" Leechers"):
-                    leechers = text_data.split(" ")[-2]
-                elif text_data.startswith(" Total size"):
-                    size = text_data.split(" ")[-3] + " " + text_data.split(" ")[-2]
+                if torrent['leechers']: break
+                try:
+                    # These items require a filter to ensure they can be added
+                    section = sl.select_one('strong').get_text().strip().lower().replace(" ", "_")
+                    section_value = sl.select_one('span').get_text().strip()
+                    if section == "uploaded_by":
+                        if any(ele in section_value.lower() for ele in bans): return False
+                        torrent['uploaded_by'] = section_value
+                        torrent['uploaded_by_url'] = sl.select_one('a').get('href')
+                        continue
+                    elif section == "category":
+                        if section_value.lower() == "xxx": 
+                            if not allow_nsfw: continue
+                            torrent['nsfw'] = True
+                        elif section_value.lower() in ['software', 'games']: torrent['risk'] = True
+                        continue
 
-            torrent = {
-                    'magnet': magnet,
-                    'torrent': torrent,
-                    'url': main_link,
-                    'name': main_link[:-1].split("/")[-1],
-                    'total_size': size,
-                    'seeders': seeders,
-                    'leechers': leechers,
-                    'risk': risk
-            }
-            return torrent
-        except:
-            return False
+                    # These I just automate, idgaf
+                    torrent[section] = section_value.lower()
+                    
+                except: continue
 
-    def single_parse(self, main_link:str, bans:list=[], ignore_bans:bool=False, allow_nsfw:bool=False):
-        try:
-            if ignore_bans: bans=[]
-            torrent = {
-                'url': main_link,
-                'name': main_link[:-1].split("/")[-1],
-                'genres': [],
-                'magnet': '',
-                'torrent': '',
-                'stream': '',
-                'category': '',
-                'type': '',
-                'language': '',
-                'total_size': '',
-                'uploaded_by': '',
-                'downloads': '',
-                'last_checked': '',
-                'date_uploaded': '',
-                'seeders': '',
-                'leechers': '',
-                'uploaded_by_url': '',
-                'short_title': '',
-                'short_title_url': '',
-                'description': '',
-                'thumbnail': '',
-                'nsfw': False,
-                'risk': False
-            }
-
-            magR = FuturesSession().get(main_link, headers=self.headers)
-            pirate_soup = BeautifulSoup(magR.result().text, 'html.parser')
-
-
-            # main data (very fast :3)
-            #we do this first since teh category and uploader
-            #names are the quickest to look for bans/nsfw
-            #to check the uploader name
-            sl_elm = pirate_soup.select("main div div div div div ul li")
-            for sl in sl_elm:
-
-                if torrent['uploaded_by']:
-                    if any(ele in torrent['uploaded_by'].lower() for ele in bans): return False
-                
-                if torrent['category']:
-                    if torrent['category'] == "XXX":
-                        if not allow_nsfw: return False
-                        torrent['nsfw'] = True
-                    if torrent['category'].lower() == "games" or torrent['category'].lower() == "software":
-                        if not allow_nsfw: return False
-                        torrent['risk'] = True
-
-                if torrent.get('leechers'): break
-                text_data = sl.get_text()
-                if not text_data: continue
-                if not text_data.startswith(" "): continue
-                section = sl.select_one('strong')
-                value = sl.select_one('span')
-                if (not section) or (not value): continue
-
-                torrent[section.get_text().lower().replace(" ", "_")] = value.get_text()
-
-            if torrent['uploaded_by']: 
-                torrent['uploaded_by'] = torrent['uploaded_by'].replace(" ", "")
-                torrent['uploaded_by_url'] = f"https://1337x.to/user/{torrent['uploaded_by']}/"
-            else: torrent['uploaded_by_url'] = ''
-
-            # The descriptions stuff
+        # The descriptions stuff
             more = pirate_soup.select_one(".content-row")
             if more:
                 torrent['short_title'] = more.select_one('h3 a').get_text() or ''
@@ -189,26 +190,11 @@ class uTils:
                     if not genre: continue
                     torrent['genres'].append(genre.get_text())
 
-            # url buttons
-            dl_elms = pirate_soup.select("main div div div div div ul li a")
-            for dl_elm in dl_elms:
-                #once we have everything, gtfo
-                if torrent.get('torrent') and torrent.get('magnet') and torrent.get('stream'): break
-                if dl_elm:
-                    link = dl_elm.get('href')
-                    if link:
-                        if link.startswith('magnet'):
-                            torrent['magnet'] = link
-                        if link.endswith('.torrent'):
-                            torrent['torrent'] = link
-                        if link.startswith('https://novastream'):
-                            torrent['stream'] = link
-
-            # image
+        # image
             image = pirate_soup.select_one(".torrent-image > img:nth-child(1)")
-            if image:
-                torrent['thumbnail'] = "https:" + image.get('src') or ''
-
+            if image: torrent['thumbnail'] = "https:" + image.get('src') or ''
+        #
+            print(torrent)
             return torrent
         except:
             return False

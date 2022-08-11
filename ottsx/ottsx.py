@@ -53,13 +53,17 @@ class ottsx(commands.Cog):
                         filter = flagged['flags'][0]
 
                 bans = await self.conf.guild(ctx.guild).bans()
-                results = uTils().search(query, bans, max=9, speed=True, filter=filter)
+                results = uTils.search(query, bans, max=9, speed=True, filter=filter)
                 if not results: return await ctx.reply('There was no results')
                 format = []
                 for i, res in enumerate(results):
+                    torrents_markup = []
+                    for link in res['torrent']: torrents_markup.append(f'[{link["name"]}]({link["link"]})')
+                    res['torrent'] = " - ".join(torrents_markup)
+
                     format.append(f"""
 **{i+1}. [{res['name']}]({res['url']})**
-**[Magnet]({await shorten(self, res["magnet"])}) - [Torrent]({res["torrent"]})** | Seeders: {res['seeders']} | Size: {res['total_size']} 
+**[Magnet]({await shorten(self, res["magnet"])}) - {res['torrent']}** | Seeders: {res['seeders']} | Size: {res['total_size']} 
 """)
                 embed = discord.Embed(
                     description="".join(format)
@@ -96,7 +100,7 @@ class ottsx(commands.Cog):
 
                 bans = await self.conf.guild(ctx.guild).bans()
                 allow_nsfw = await solve_nfilter(self, ctx)
-                result = uTils().search(query, bans, allow_nsfw=allow_nsfw, filter=filter)
+                result = uTils.search(query, bans, allow_nsfw=allow_nsfw, filter=filter)
                 if not result: return await ctx.reply('There was no results')
                 if len(result) < count:
                     count = len(result)
@@ -264,6 +268,10 @@ async def make_embed(self, torrent_info, bans:list=[], ignore_bans:bool=False, p
         if torrent_info['nsfw']: torrent_info['nsfw'] = "\n**NSFW**"
         if not torrent_info['description']: torrent_info['description'] = "No Description."
 
+        torrents_markup = []
+        for link in torrent_info['torrent']: torrents_markup.append(f'[{link["name"]}]({link["link"]})')
+        torrent_info['torrent'] = " - ".join(torrents_markup)
+
         short_magnet = await shorten(self, torrent_info["magnet"])
 
         embed = discord.Embed(
@@ -273,7 +281,7 @@ async def make_embed(self, torrent_info, bans:list=[], ignore_bans:bool=False, p
 {torrent_info['nsfw']}
 {torrent_info['description']}
 
-**Download:** *[Magnet]({short_magnet}) - [Torrent]({torrent_info['torrent']}){stream}*
+**Download:** *[Magnet]({short_magnet}) - {torrent_info['torrent']}){stream}*
 **Uploaded by:** [{torrent_info['uploaded_by']}]({torrent_info['uploaded_by_url']}) *({torrent_info['date_uploaded']})*
 **Type:** *{torrent_info['language']}, {torrent_info['category']} - {torrent_info['type']}*
 **Genres:** {", ".join(torrent_info["genres"])}
