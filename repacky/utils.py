@@ -149,7 +149,7 @@ class utilities():
             repack['name_full'] = content.select_one('h2.topic-title').get_text()
             repack['url'] = info_page
             repack['date'] = content.select_one('p.author time').getText().split('» ')[-1].strip()
-            repack['nfo'] = content.select('img.postimage')[-1].get('src')
+            repack['nfo'] = content.select('div.content img.postimage')[-1].get('src')
             
             # From respect of gangster who runs KaOsKrew's site, I have removed
             #showing download links in the embed
