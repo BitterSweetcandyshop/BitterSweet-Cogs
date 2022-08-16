@@ -27,7 +27,10 @@ class ottsx(commands.Cog):
     @commands.guild_only()
     async def ottsx(self, ctx, query):
         """
-        Search 1337x
+        Search 1337x.
+
+        Flags:
+        - Sort: `--seeders`, `--leechers`, `--size`, `--date`
         """
         async with ctx.typing():
             filter = ''
@@ -48,6 +51,12 @@ class ottsx(commands.Cog):
     @ottsx.command(aliases=["search", "s", "l"])
     @commands.cooldown(1, 5, commands.BucketType.user)
     async def lookup(self, ctx, query):
+        """
+        Search 1337x, with maximum data scrape.
+
+        Flags:
+        - Sort: `--seeders`, `--leechers`, `--size`, `--date`
+        """
         async with ctx.typing():
             filter = ''
             if query.__contains__('--'):

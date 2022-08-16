@@ -27,6 +27,9 @@ class nyaa(commands.Cog):
     async def nyaa(self, ctx, *, query):
         """
         Search Nyaa.si
+        Flags:
+        - Category: `--manga` and `--anime`
+        - Sort: `--seeders`, `--leechers`, `--size`, `--date`
         """
         async with ctx.typing():
             cat, sub, sort = [0, 0, 'seeders']
@@ -50,7 +53,11 @@ class nyaa(commands.Cog):
     @commands.guild_only()
     async def lookup(self, ctx, *, query):
         """
-        Search Nyaa.si
+        Search Nyaa.si, with maximum data scrape.
+
+        Flags:
+        - Category: `--manga` and `--anime`
+        - Sort: `--seeders`, `--leechers`, `--size`, `--date`
         """
         async with ctx.typing():
             cat, sub, sort = [0, 0, 'seeders']
