@@ -111,10 +111,10 @@ in one place. More importantly though I'm using this project to learn about pars
         - [KaOsKrew](https://kaoskrew.org)
         - [Darck](https://darckrepacks.com/)
     __Valued Feedback__
-        - [DieDoesMC#0945](https://discord.gg/8WCZGZ5Ucr)
-        - Bulldög#0533
-        - [champagne.sunshine#0968](https://discord.gg/38G68UfhPp)
-        - ReX_XeNoME#9250
+        - [DieDoesMC#0945](https://discord.com/users/590017562729775124)
+        - [Bulldög#0533](https://discord.com/users/866192755238895646)
+        - [champagne.sunshine#0968](https://discord.com/users/906983104411992115)
+        - [ReX_XeNoME#9250](https://discord.com/users/416088035805888512)
     __Other__
         - [Vimm's Lair](https://vimm.net)
         - Pfp: ju ju bee#4839
