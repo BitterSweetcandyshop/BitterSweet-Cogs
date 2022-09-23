@@ -135,31 +135,31 @@ class repacky(commands.Cog):
 
         await menu(ctx, repacks, DEFAULT_CONTROLS)
 
-# Darck
-    @commands.group(aliases=["darckside", "dar"], invoke_without_command=True)
-    @commands.cooldown(1, 10, commands.BucketType.user)
-    @commands.guild_only()
-    async def darck(self, ctx, *, query:str):
-        """Search Drack's repacks."""
-        async with ctx.typing():
-            results = utilities.darckside.search(query, limit=20)
-            if not results: return await ctx.reply('There was no results')
-            embed = make_embed(results, ctx.author)
-        await ctx.reply(embed=embed)
-
-    @darck.command(aliases=["search", "s", "l"])
-    @commands.cooldown(1, 10, commands.BucketType.user)
-    async def lookup(ctx, *, query:str):
-        """Find repacks with all the important information."""
-        async with ctx.typing():
-            results = utilities.darckside.search(query, limit=5)
-            if not results: return await ctx.reply('There was no results')
-            repacks = []
-            for i, res in enumerate(results):
-                repack_info = utilities.darckside.parse_page(res['url'])
-                repacks.append(await make_page_embed(repack_info, page=(i+1), count=(len(results))))
-
-        await menu(ctx, repacks, DEFAULT_CONTROLS)
+# Darck (Disabled as REST API is being made)
+    #    @commands.group(aliases=["darckside", "dar"], invoke_without_command=True)
+    #    @commands.cooldown(1, 10, commands.BucketType.user)
+    #    @commands.guild_only()
+    #    async def darck(self, ctx, *, query:str):
+    #        """Search Drack's repacks."""
+    #        async with ctx.typing():
+    #            results = utilities.darckside.search(query, limit=20)
+    #            if not results: return await ctx.reply('There was no results')
+    #            embed = make_embed(results, ctx.author)
+    #        await ctx.reply(embed=embed)
+    #
+    #    @darck.command(aliases=["search", "s", "l"])
+    #    @commands.cooldown(1, 10, commands.BucketType.user)
+    #    async def lookup(ctx, *, query:str):
+    #        """Find repacks with all the important information."""
+    #        async with ctx.typing():
+    #            results = utilities.darckside.search(query, limit=5)
+    #            if not results: return await ctx.reply('There was no results')
+    #            repacks = []
+    #            for i, res in enumerate(results):
+    #                repack_info = utilities.darckside.parse_page(res['url'])
+    #                repacks.append(await make_page_embed(repack_info, page=(i+1), count=(len(results))))
+    #
+    #        await menu(ctx, repacks, DEFAULT_CONTROLS)
 
 #KaOsKrew
     @commands.group(aliases=["kaos", "kk"], invoke_without_command=True)
