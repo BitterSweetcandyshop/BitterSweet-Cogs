@@ -38,8 +38,8 @@ class repacky(commands.Cog):
             except: pass
             try: repacks.extend(utilities.kaoskrew.search(query, limit=3))
             except: pass
-            try: repacks.extend(utilities.darckside.search(query, limit=3))
-            except: pass
+            #try: repacks.extend(utilities.darckside.search(query, limit=3))
+            #except: pass
             results_formatted = []
             shuffle(repacks)
             if not repacks: return await ctx.reply('There was no results')
@@ -58,8 +58,8 @@ class repacky(commands.Cog):
             except: pass
             try: repacks.extend(utilities.kaoskrew.search(query, limit=3))
             except: pass
-            try: repacks.extend(utilities.darckside.search(query, limit=3))
-            except: pass
+            #try: repacks.extend(utilities.darckside.search(query, limit=3))
+            #except: pass
             repack_embeds = []
             shuffle(repacks)
             if not repacks: return await ctx.reply('There was no results')

@@ -53,7 +53,6 @@ class Helpless(commands.Cog):
     - `fitgirl` (repacks)
     - `scooter` (repacks)
     - `kaos` (repacks)
-    - `darck` (repacks)
     - `vimm` (roms)
 **Software**
     - `software` Search for software.
